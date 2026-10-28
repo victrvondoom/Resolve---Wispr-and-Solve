@@ -17,6 +17,16 @@
 - [x] Executor lease across concurrent missions with fencing check (with ablation)
 - [x] Browser A/B/C benchmark (4 scenarios × 6 seeds) with oracle separate from verifier
 
+## Added (second pass, verified on Linux)
+- [x] Utterance classifier + revision protocol, spoken approval bound to presented digest, correction/cancel (W7, typed transcripts)
+- [x] Supervisor with 13 tool-bounded roles, parallel fan-out, entity gate, separate verifier, retry, supersede (G5)
+- [x] Recorded browser skills: record → compile → approve → replay → repair proposal (W8)
+- [x] Sandboxed file worker with dry-run, stale-plan guard, undo after restart (W9)
+- [x] 80-concept catalogue with validator; 11 TESTED
+- [x] Ablations for six mechanisms; SIGKILL crash/restart test (W12)
+- [x] 3D landing page and redesigned Mission Control, UI E2E, real screenshots
+- [ ] W1 Notepad / focus-steal / UIA on real Windows (code ready, NOT_RUN)
+
 ## Outstanding gates
 - [ ] UI Automation semantic element tree (Windows) — NOT_RUN here
 - [ ] Notepad type+save+verify and focus-steal refusal on Windows (G2)

@@ -1,12 +1,15 @@
-.....................................s...............ssss              [100%]
+.................................................................... [ 59%]
+......s.....ss............................ssss.                          [100%]
 =========================== short test summary info ============================
 SKIPPED [1] tests/test_api_gui.py:6: unittest.case.SkipTest: tkinter unavailable on this host (headless Linux); Tk desktop fixture tests are NOT_RUN here
 SKIPPED [1] tests/test_demo_controller.py:6: unittest.case.SkipTest: tkinter unavailable on this host (headless Linux); Tk desktop fixture tests are NOT_RUN here
 SKIPPED [1] tests/test_demo_suite.py:6: unittest.case.SkipTest: tkinter unavailable on this host (headless Linux); Tk desktop fixture tests are NOT_RUN here
 SKIPPED [1] tests/test_uia_adapter.py:21: requires Windows
+SKIPPED [1] tests/test_w1_notepad.py:84: WINDOWS_NATIVE_TESTS_NOT_RUN: needs interactive Windows + RESOLVE_GUI_TEST=1 (moves real input)
+SKIPPED [1] tests/test_w1_notepad.py:77: WINDOWS_NATIVE_TESTS_NOT_RUN: needs interactive Windows + RESOLVE_GUI_TEST=1 (moves real input)
 SKIPPED [1] tests/test_windows_adapter.py:34: Win32 desktop required
 SKIPPED [1] tests/test_windows_adapter.py:25: Win32 desktop required
 SKIPPED [1] tests/test_windows_adapter.py:14: Win32 desktop required
 SKIPPED [1] tests/test_windows_adapter.py:48: set RESOLVE_GUI_TEST=1 for physical input
-52 passed, 8 skipped, 2 subtests passed in 63.45s (0:01:03)
+108 passed, 10 skipped, 4 subtests passed in 211.60s (0:03:31)
 exit=0

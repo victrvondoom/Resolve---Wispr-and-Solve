@@ -1,0 +1,152 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>RESOLVE — Wispr &amp; Solve</title>
+<meta name="description" content="RESOLVE: voice-operated, multi-agent automation that keeps intent, entity, version and effect bound together, and independently verifies every effect.">
+<link rel="icon" href="/static/mark.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/static/landing.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="site-header">
+  <div class="wrap header-row">
+    <a class="brand" href="/" aria-label="RESOLVE home"><img src="/static/mark.svg" alt="" width="26" height="26"><span>RESOLVE</span><small>Wispr &amp; Solve</small></a>
+    <nav aria-label="Primary">
+      <ul class="nav-links">
+        <li><a href="#problem">Problem</a></li>
+        <li><a href="#how">How it works</a></li>
+        <li><a href="#benchmark">Benchmark</a></li>
+        <li><a href="#status">Status</a></li>
+      </ul>
+    </nav>
+    <a class="btn btn-small" href="/app">Mission Control</a>
+  </div>
+</header>
+
+<main id="main">
+  <section class="hero" aria-labelledby="hero-title">
+    <canvas id="scene" class="scene" role="img" aria-label="Animated 3D graph: intent nodes connected to entity, version and effect nodes, all anchored to a ring representing the causal state ledger." data-renderer="pending"></canvas>
+    <div class="hero-shade" aria-hidden="true"></div>
+    <div class="wrap hero-inner">
+      <p class="eyebrow"><span class="dot" aria-hidden="true"></span> Local-first research prototype · no API keys</p>
+      <h1 id="hero-title">Say what you mean.<br><span class="grad">Prove what happened.</span></h1>
+      <p class="lede">RESOLVE turns a spoken request into computer actions without losing the thread: the <em>intent</em> stays bound to the exact <em>entity</em>, the exact <em>version</em>, and an <em>effect</em> that a separate verifier checks outside the code that produced it.</p>
+      <div class="cta-row">
+        <a class="btn btn-primary" id="cta" href="/app">Open Mission Control <span aria-hidden="true">→</span></a>
+        <a class="btn btn-ghost" href="#how">See the pipeline</a>
+      </div>
+      <dl class="hero-meta">
+        <div><dt>Server</dt><dd id="health-chip" class="chip chip-muted">checking…</dd></div>
+        <div><dt>Browser actions</dt><dd>Playwright · DOM-level</dd></div>
+        <div><dt>Delivery</dt><dd>Simulated outbox</dd></div>
+      </dl>
+    </div>
+    <p class="legend wrap" aria-hidden="true"><span class="k k-intent"></span>intent <span class="k k-entity"></span>entity <span class="k k-version"></span>version <span class="k k-effect"></span>effect <span class="k k-ledger"></span>ledger</p>
+  </section>
+
+  <section id="problem" class="band" aria-labelledby="problem-title">
+    <div class="wrap">
+      <p class="eyebrow">The failure it fixes</p>
+      <h2 id="problem-title">Automation usually breaks quietly, between the words and the effect.</h2>
+      <p class="section-lede">One request: <q>Prepare a follow-up for Jordan Lee using the latest report, update the CRM and send it after I approve.</q> Three ordinary things go wrong.</p>
+      <div class="cards three">
+        <article class="card">
+          <div class="card-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="22" height="22"><circle cx="8" cy="8" r="3.2"/><circle cx="16" cy="8" r="3.2"/><path d="M2.5 19c.8-3.2 3-5 5.5-5s4.7 1.8 5.5 5M10.5 19c.8-3.2 3-5 5.5-5s4.7 1.8 5.5 5"/></svg>
+          </div>
+          <h3>Two Jordan Lees</h3>
+          <p>The CRM has two contacts with the same display name. A naive agent writes to whichever row comes first.</p>
+          <p class="fix"><b>RESOLVE:</b> stops with <code>NEEDS_CLARIFICATION</code>, shows stable IDs and context, and binds the choice by ID, never by name.</p>
+        </article>
+        <article class="card">
+          <div class="card-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="22" height="22"><path d="M6 2.8h8l4 4v14.4H6z"/><path d="M14 2.8v4h4M9 12h6M9 15.5h4"/></svg>
+          </div>
+          <h3>The report changed after approval</h3>
+          <p>You approved one file. Before the send, someone edits it. Most pipelines attach whatever is on disk now.</p>
+          <p class="fix"><b>RESOLVE:</b> approval is bound to a digest of recipient, content, attachment SHA-256 and intent revision. A changed file no longer matches, so the send is refused.</p>
+        </article>
+        <article class="card">
+          <div class="card-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="22" height="22"><path d="M3 12h5l2-5 4 10 2-5h5"/></svg>
+          </div>
+          <h3>The acknowledgement got lost</h3>
+          <p>The send goes through but the response never arrives. A stateless agent retries, and the email goes out twice.</p>
+          <p class="fix"><b>RESOLVE:</b> persists <code>DISPATCHING</code> first, marks the outcome <code>UNCERTAIN</code>, and reconciles by reading the outbox. It does not retry blindly.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section id="how" class="band band-alt" aria-labelledby="how-title">
+    <div class="wrap">
+      <p class="eyebrow">How it works</p>
+      <h2 id="how-title">Intent–Entity–Effect Continuity, recorded in a Causal State Ledger</h2>
+      <p class="section-lede"><b>Hypothesis (IEEC):</b> an agent is safe to trust with consequential actions only if every action carries an unbroken chain from the user's current intent revision to a stable entity, a pinned version, and an effect that is checked independently. The <b>Causal State Ledger</b> persists each link and every state transition in SQLite, so the chain survives restarts and can be streamed live.</p>
+      <ol class="pipeline">
+        <li><span class="step">1</span><h3>Capture intent</h3><p>Typed or dictated text becomes a mission with a numbered intent revision. Speech is reviewed before it is submitted.</p></li>
+        <li><span class="step">2</span><h3>Resolve entities</h3><p>Candidates are found by name, then bound by stable ID. Ambiguity stops the run and asks you.</p></li>
+        <li><span class="step">3</span><h3>Pin versions</h3><p>The latest report is chosen by modification time and pinned by SHA-256, not by file name.</p></li>
+        <li><span class="step">4</span><h3>Approve the exact action</h3><p>You approve a digest of the action. Change any part of it and the approval no longer applies.</p></li>
+        <li><span class="step">5</span><h3>Act through a real tool</h3><p>An executor holding a lease drives the fixture apps through Playwright. <code>DISPATCHING</code> is written before any side effect.</p></li>
+        <li><span class="step">6</span><h3>Verify independently</h3><p>A verifier reads the app's own database to confirm the effect, or reconciles an <code>UNCERTAIN</code> outcome read-only.</p></li>
+      </ol>
+    </div>
+  </section>
+
+  <section id="benchmark" class="band" aria-labelledby="bench-title">
+    <div class="wrap">
+      <p class="eyebrow">Measured, not claimed</p>
+      <h2 id="bench-title">Controlled fixture benchmark</h2>
+      <p class="section-lede">Loaded live from <code>GET /api/web/benchmark</code>, the recorded output of <code>python benchmarks/web_bench.py</code>. Four constructed scenarios (ambiguous name, report edited after approval, lost acknowledgement, misleading toast) run against three policies.</p>
+      <div class="table-card">
+        <div class="table-scroll" tabindex="0" role="region" aria-labelledby="bench-title">
+          <table id="bench-table" data-state="loading">
+            <thead><tr><th scope="col">Policy</th><th scope="col">What it does</th><th scope="col" class="num">Runs</th><th scope="col" class="num">Unsafe or false</th><th scope="col">Wilson 95%</th><th scope="col">Verdicts</th></tr></thead>
+            <tbody id="bench-body"><tr><td colspan="6" class="muted">Loading recorded result…</td></tr></tbody>
+          </table>
+        </div>
+        <p class="caveat" id="bench-note">Note: loading…</p>
+        <p class="caveat">The baselines are written by this project and the scenarios are constructed to exercise each mechanism. The results show those mechanisms matter in these cases. They are not a general reliability figure, and they make no claim about other agents.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="status" class="band band-alt" aria-labelledby="status-title">
+    <div class="wrap">
+      <p class="eyebrow">Honest status</p>
+      <h2 id="status-title">What is verified, and what is not</h2>
+      <p class="section-lede">“Verified” means real input, a typed contract, a real tool, an effect observed outside the generating code, an independent verifier, and an automated test that can fail.</p>
+      <div class="status-grid">
+        <article class="status-card ok"><span class="chip chip-ok">Verified on Linux</span><h3>Browser fixture missions</h3><p>CRM, reports and outbox apps driven by Playwright (DOM-level, not physical cursor). Effects checked in each app's SQLite database.</p></article>
+        <article class="status-card ok"><span class="chip chip-ok">Verified on Linux</span><h3>Approval digests</h3><p>A wrong or stale digest is refused with <code>409</code>. Editing the report after approval blocks the send.</p></article>
+        <article class="status-card ok"><span class="chip chip-ok">Verified on Linux</span><h3>Lost-ack reconciliation</h3><p>A dropped acknowledgement becomes <code>UNCERTAIN</code>, then <code>CONFIRMED</code> by a read-only check. Exactly one message.</p></article>
+        <article class="status-card ok"><span class="chip chip-ok">Verified on Linux</span><h3>Executor lease</h3><p>Two concurrent missions serialize on one exclusive lease. A fenced worker sends nothing.</p></article>
+        <article class="status-card ok"><span class="chip chip-ok">Verified on Linux</span><h3>SSE ledger stream</h3><p>Persisted ledger events stream over Server-Sent Events and resume by sequence number after a reconnect.</p></article>
+        <article class="status-card warn"><span class="chip chip-warn">Not run on build host</span><h3>Native Windows control</h3><p>Cursor movement, clicks and typing into Notepad were not exercised here: <code>WINDOWS_NATIVE_TESTS_NOT_RUN</code> on the build host. To test, run <code>scripts/smoke-windows.ps1</code> in an interactive Windows session.</p></article>
+        <article class="status-card warn"><span class="chip chip-warn">Simulated</span><h3>Message delivery</h3><p>The outbox is a local fixture: <b>SIMULATED DELIVERY</b>. No external email or messages are ever sent.</p></article>
+        <article class="status-card muted"><span class="chip chip-muted">No integration</span><h3>Wispr Flow</h3><p>Wispr Flow was used to dictate development notes. There is no Wispr SDK integration in RESOLVE. Voice input in the app uses the browser's speech recognition where available.</p></article>
+      </div>
+    </div>
+  </section>
+
+  <section class="band cta-band" aria-labelledby="cta-title">
+    <div class="wrap cta-inner">
+      <h2 id="cta-title">Run the signature demo yourself</h2>
+      <p>Start a browser mission, pick the right Jordan Lee, approve the exact send, arm the lost-acknowledgement fault, and watch the ledger reconcile it live.</p>
+      <a class="btn btn-primary" href="/app">Open Mission Control <span aria-hidden="true">→</span></a>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="wrap footer-row">
+    <div><a class="brand" href="/"><img src="/static/mark.svg" alt="" width="20" height="20"><span>RESOLVE</span></a><p class="muted">Local prototype. Runs offline on 127.0.0.1, no API keys. Webpages and documents are treated as untrusted data.</p></div>
+    <div class="muted footer-cmds"><p>Server: <code>python src/resolve_app.py</code></p><p>Tests: <code>python -m pytest tests -q</code></p><p>Benchmark: <code>python benchmarks/web_bench.py</code></p></div>
+  </div>
+</footer>
+<script src="/static/landing.js"></script>
+</body>
+</html>

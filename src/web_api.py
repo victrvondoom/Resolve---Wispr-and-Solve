@@ -22,10 +22,16 @@ class WebApi:
         self.world: FixtureWorld | None = None
         self.runner: WebMissionRunner | None = None
         self.supervisor: Supervisor | None = None
+        import threading
+        self._world_lock = threading.Lock()
         self.skills = None
         self.files = None
 
     def ensure_world(self) -> dict:
+        with self._world_lock:  # concurrent first requests must not both seed the fixture DBs
+            return self._ensure_world()
+
+    def _ensure_world(self) -> dict:
         if not self.world:
             self.world = FixtureWorld(self.root, test_mode=os.environ.get('RESOLVE_TEST_MODE', '1') == '1')
             urls = {'crm': self.world.crm.url, 'docs': self.world.docs.url, 'outbox': self.world.outbox.url}

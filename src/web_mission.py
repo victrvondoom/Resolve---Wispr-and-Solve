@@ -250,6 +250,9 @@ class WebMissionRunner:
             raise MissionError('NEEDS_CLARIFICATION', mission.get('ambiguity_reason', 'no unique entity binding'))
         if mission['status'] == 'CANCELLED':
             raise MissionError('CANCELLED', 'mission was cancelled')
+        if any((a := self.ledger.action(x)) and a['operation'] == 'outbox_send' and a['status'] in self.IN_FLIGHT | {'CONFIRMED'}
+               for x in mission.get('actions', [])):
+            raise MissionError('ALREADY_SENT', 'the send for this revision is confirmed or in flight; start a new mission or correct the intent')
         cid, rev = mission['binding']['contact_id'], mission['intent_revision']
         done_task = next((a for a in (self.ledger.action(x) for x in mission.get('actions', []))
                           if a and a['operation'] == 'crm_create_task' and a['status'] == 'CONFIRMED' and a['target_entity_id'] == cid), None)

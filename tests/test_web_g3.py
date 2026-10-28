@@ -218,3 +218,20 @@ class ConcurrencyTests(unittest.TestCase):
                 self.assertEqual(ctx.exception.code, 'LEASE_LOST')
                 self.assertEqual(ledger.action(p['send_action'])['status'], 'CANCELLED')
                 self.assertEqual(oracle(d / 'fx', 'outbox', 'message_committed'), [])
+
+
+@unittest.skipUnless(HAVE_PW, 'playwright not installed')
+class CompletedMissionTests(unittest.TestCase):
+    def test_replanning_after_confirmed_send_is_refused(self):
+        with tempfile.TemporaryDirectory() as d:
+            d = Path(d)
+            with FixtureWorld(d / 'fx') as w:
+                r = WebMissionRunner(Ledger(d / 'l.sqlite3'), {'crm': w.crm.url, 'docs': w.docs.url, 'outbox': w.outbox.url}, d / 'fx')
+                m = r.start(CMD)
+                r.bind(m['mission_id'], 'C-104', 1)
+                p = r.plan(m['mission_id'])
+                r.approve(p['send_action'], p['approval_digest'])
+                self.assertEqual(r.run_send(p['send_action'])['status'], 'CONFIRMED')
+                with self.assertRaises(MissionError) as ctx:
+                    r.plan(m['mission_id'])
+                self.assertEqual(ctx.exception.code, 'ALREADY_SENT')

@@ -1,88 +1,210 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>RESOLVE — Wispr & Solve</title>
-<style>
-:root{color-scheme:dark;--bg:#101319;--panel:#191e27;--line:#2a3240;--text:#eef2f7;--muted:#9aa7b8;--accent:#6ee7c0;--amber:#f4c46a;--red:#f38c8c}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:15px/1.5 "Segoe UI",system-ui,sans-serif}button,input,textarea{font:inherit}button{background:#273443;color:var(--text);border:1px solid #3c4a5c;border-radius:8px;padding:9px 13px;cursor:pointer}button:hover{border-color:var(--accent)}button.primary{background:#145b4c;border-color:#247d68}button:disabled{opacity:.5;cursor:not-allowed}header{height:68px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 28px;background:#141820;position:sticky;top:0}header strong{font-size:19px;letter-spacing:.02em}header small,.muted{color:var(--muted)}.layout{display:grid;grid-template-columns:210px 1fr;min-height:calc(100vh - 68px)}nav{border-right:1px solid var(--line);padding:20px 12px}nav button{display:block;width:100%;text-align:left;margin:4px 0;background:transparent;border-color:transparent;color:var(--muted)}nav button.active{background:#222b36;color:var(--text);border-color:var(--line)}main{padding:28px;max-width:1400px;width:100%;margin:0 auto}.top{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px}.grid{display:grid;grid-template-columns:repeat(12,1fr);gap:16px}.card{background:var(--panel);border:1px solid var(--line);border-radius:13px;padding:18px}.span8{grid-column:span 8}.span4{grid-column:span 4}.span6{grid-column:span 6}.span12{grid-column:span 12}h1{font-size:24px;margin:0}h2{font-size:17px;margin:0 0 12px}p{margin:.4em 0}.status{display:inline-flex;padding:3px 9px;border:1px solid #3c6459;border-radius:999px;color:var(--accent);font-size:12px}.status.warn{color:var(--amber);border-color:#705d37}.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.stack{display:grid;gap:10px}.candidate{border:1px solid var(--line);border-radius:9px;padding:12px;display:flex;gap:12px;align-items:flex-start}.candidate input{margin-top:5px}.candidate.selected{border-color:var(--accent)}.candidate b{display:block}.candidate small{color:var(--muted)}.metric{font-size:26px;font-weight:650}.log{font:12px/1.6 ui-monospace,Consolas,monospace;background:#11151b;padding:12px;border-radius:8px;max-height:220px;overflow:auto;white-space:pre-wrap;color:#c0cbd9}.notice{color:var(--amber);padding:10px;border-left:3px solid var(--amber);background:#29251e}.success{color:var(--accent)}textarea{width:100%;min-height:68px;background:#11151b;color:var(--text);border:1px solid var(--line);border-radius:8px;padding:10px}select{background:#11151b;color:var(--text);border:1px solid var(--line);border-radius:8px;padding:9px}.hide{display:none}footer{color:var(--muted);font-size:12px;margin-top:22px}@media(max-width:850px){.layout{grid-template-columns:1fr}nav{display:flex;overflow:auto;border-right:0;border-bottom:1px solid var(--line);padding:8px}nav button{white-space:nowrap;width:auto}.span8,.span4,.span6{grid-column:span 12}main{padding:16px}header{padding:0 16px}}
-</style></head>
-<body><header><div><strong>RESOLVE</strong> <small>Wispr &amp; Solve · local prototype</small></div><div class="row"><span class="status">LOCAL MODE</span><small id="health">connecting…</small></div></header>
-<div class="layout"><nav aria-label="Main navigation"><button class="active" data-target="dashboard">Dashboard</button><button data-target="voiceSection">Voice Console</button><button data-target="computerSection">Live Computer</button><button data-target="missionSection">Mission</button><button data-target="entitiesSection">Entities</button><button data-target="evidenceSection">Evidence &amp; Approval</button><button data-target="agentsSection">Agents</button><button data-target="skillsSection">Skills</button><button data-target="benchmarksSection">Benchmarks</button><button data-target="workspacesSection">Workspaces</button></nav>
-<main id="dashboard"><div class="top"><div><h1>Mission control</h1><div class="muted">One local workspace · simulator state is labeled clearly</div></div><button class="primary" id="reload">Refresh mission</button></div>
-<div class="grid">
-<section class="card span8"><h2>Voice console <span class="status warn" id="voicebadge">TEXT INPUT</span></h2><p class="muted">Use dictation if your browser exposes Web Speech recognition. Transcription may use your browser's speech service. Review the editable transcript before submitting it.</p><textarea id="intent" aria-label="Editable mission intent">Find the latest report for our client, update the follow-up record, and send the correct report to the intended contact after I approve.</textarea><div class="row" style="margin-top:10px"><button id="voiceStart">Start dictation</button><button id="voiceStop" disabled>Stop dictation</button><button id="revise">Revise mission intent</button><span id="revmsg" class="muted" aria-live="polite"></span></div></section>
-<section class="card span4"><h2>Current mission</h2><div id="mission"></div></section>
-<section class="card span6"><h2>Resolve target entities</h2><p class="muted">Two contacts share a name. Context and stable IDs are shown for explicit selection.</p><div id="contacts" class="stack"></div></section>
-<section class="card span6"><h2>Select report version</h2><p class="muted">Freshness policy: latest modification timestamp. Name sorting is not used.</p><div id="reports" class="stack"></div></section>
-<section class="card span6"><h2>Prepared action</h2><div id="draftbox" class="muted">Choose a contact and report to prepare a draft.</div><div class="row" style="margin-top:12px"><button class="primary" id="draft">Prepare send for approval</button><button id="approve" disabled>Approve exact action</button></div><p id="actionmsg" class="muted"></p></section>
-<section class="card span6"><h2>Independent outcome evidence</h2><div id="evidence" class="muted">No verified effect yet.</div></section>
-<section class="card span12" id="webmission"><h2>Browser mission <span class="status warn" id="wmbadge">FIXTURE APPS · DOM-LEVEL (NOT PHYSICAL CURSOR)</span></h2><p class="muted">Drives three separate local fixture apps (CRM, reports, outbox: SIMULATED DELIVERY) through Playwright and verifies each effect straight from their databases.</p>
-<textarea id="wmcmd" aria-label="Browser mission command">Prepare a follow-up for Jordan Lee using the latest report, update the CRM and send it after I approve.</textarea>
-<div class="row" style="margin-top:10px"><button class="primary" id="wmstart">Start mission</button><button id="wmplan" disabled>Plan actions</button><button id="wmapprove" disabled>Approve exact send</button><button id="wmtask" disabled>Run CRM task</button><button id="wmsend" disabled>Run send</button><button id="wmfault" disabled>Arm lost-acknowledgement fault</button></div>
-<div id="wmcands" class="stack" style="margin-top:10px" aria-live="polite"></div><p id="wmmsg" class="muted" aria-live="polite"></p><pre class="log" id="wmstate">No browser mission yet.</pre><h3>Live ledger stream (SSE)</h3><pre class="log" id="wmstream">Not connected.</pre></section>
-<section class="card span12"><h2>Live computer <span class="status warn">WIN32 · GUARDED INPUT</span></h2><p class="muted">Window discovery and foreground checks use Win32. Click/move/type require the target HWND to still be foreground and coordinates inside the selected window. Semantic UIA targeting is unsupported.</p><div class="row"><button id="windows">Inspect windows</button><select id="hwnd"><option value="">Choose a visible window…</option></select><input id="px" placeholder="screen x" aria-label="Screen x coordinate" type="number" style="width:100px"><input id="py" placeholder="screen y" aria-label="Screen y coordinate" type="number" style="width:100px"><button id="move">Move pointer</button><button id="click">Click at point</button><input id="typevalue" placeholder="Text to type" aria-label="Text to type"><button id="type">Type text</button></div><pre class="log" id="winlog">No window observation yet.</pre></section>
-<section class="card span12"><h2>Causal ledger</h2><pre class="log" id="ledger">Loading…</pre></section>
-<section class="card span12"><h2>Agents and desktop control</h2><p class="muted">The contact and report specialists inspect local records in parallel. Emergency stop cancels pending tasks and revokes the cursor lease.</p><div class="row"><button id="discover">Run resolver agents</button><button id="estop">Emergency stop</button><button id="resume">Resume control</button></div><pre class="log" id="agentlog">No agent run yet.</pre></section>
-<section class="card span12"><h2>Measured simulator benchmark</h2><p class="muted">Seeded SQLite cases only. These figures do not measure live Windows GUI reliability.</p><pre class="log" id="benchlog">Loading recorded result…</pre></section>
-<section class="card span12"><h2>Capability registry</h2><p class="muted">80 competitor-inspired concepts are catalogued as planned work. The list does not imply an adapter exists.</p><div class="row"><select id="workspace" aria-label="Choose workspace"><option value="">Choose a workspace…</option></select><span id="workspaceCount" class="muted"></span></div><pre class="log" id="workspacelog">Choose a workspace to inspect planned concepts.</pre></section>
-<section class="card span12"><h2>Learned local skill</h2><p class="muted">Save a confirmed local simulator workflow as a semantic skill. Review its exact content digest before activation. Replay prepares a fresh draft that still needs approval.</p><div class="row"><button id="skillPropose">Propose skill from confirmed action</button><button id="skillActivate" disabled>Approve skill activation</button><select id="skillList" aria-label="Active skill"><option value="">No active skill selected</option></select><button id="skillReplay">Prepare semantic replay</button></div><pre class="log" id="skilllog">No skill action yet.</pre></section>
-</div><footer>No external messages are sent. Approval runs a local simulator effect only. Native input requires an interactive Windows session. Data is stored in the local SQLite database.</footer></main></div>
-<script>
-const $=s=>document.querySelector(s);let state=null,contactId=null,reportId=null,pending=null,sessionToken=null,windowSnapshot=null,initialIntentLoaded=false,lastConfirmedActionId=null,skillProposal=null;
-const panelIds=['voiceSection','missionSection','entitiesSection','reportsSection','approvalSection','evidenceSection','computerSection','ledgerSection','agentsSection','benchmarksSection','workspacesSection','skillsSection'];document.querySelectorAll('.grid>.card').forEach((node,i)=>{if(panelIds[i])node.id=panelIds[i]});document.querySelectorAll('nav button[data-target]').forEach(button=>button.addEventListener('click',()=>{const target=document.getElementById(button.dataset.target);if(target)target.scrollIntoView({behavior:'smooth',block:'start'});document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('active',b===button))}));
-async function api(path,body){if(body&&!sessionToken){const session=await fetch('/api/session');if(!session.ok)throw Error('Could not establish local session');sessionToken=(await session.json()).token}const r=await fetch(path,body?{method:'POST',headers:{'Content-Type':'application/json','X-Resolve-Token':sessionToken},body:JSON.stringify(body)}:{});let d=await r.json();if(!r.ok)throw Error(d.error||r.statusText);return d}
-function render(){if(!state)return;const m=state.missions.find(x=>x.mission_id==='mission_demo');$('#mission').innerHTML=`<div class="metric">${esc(m.status)}</div><p>Revision ${m.intent_revision}</p><p class="muted">${esc(m.goal)}</p><p><b>Current request:</b> ${esc(m.original_request)}</p><p class="muted">Approval required for simulated send</p>`;const entities=state.entities;renderChoices('#contacts',entities.filter(x=>x.kind==='contact'),'contact');renderChoices('#reports',entities.filter(x=>x.kind==='document'),'report');$('#ledger').textContent=state.events.slice(0,14).map(e=>`${e.at}  ${e.action_id||'mission'}  ${e.state}`).join('\n')||'No action events yet.';}
-function renderChoices(sel,items,kind){$(sel).innerHTML=items.map(x=>`<label class="candidate ${((kind==='contact'?contactId:reportId)===x.entity_id)?'selected':''}"><input type="radio" name="${kind}" value="${esc(x.entity_id)}" ${((kind==='contact'?contactId:reportId)===x.entity_id)?'checked':''}><span><b>${esc(x.display_name)} · ${esc(x.version||x.kind)}</b><small>${esc(x.context||'')} · ID ${esc(x.stable_id||'unknown')} ${x.modified_at?'· modified '+esc(x.modified_at):''}</small></span></label>`).join('');$(sel).querySelectorAll('input').forEach(i=>i.onchange=()=>{if(kind==='contact')contactId=i.value;else reportId=i.value;render()})}
-function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
-async function refresh(){state=await api('/api/state');if(!initialIntentLoaded){$('#intent').value=state.missions.find(x=>x.mission_id==='mission_demo')?.original_request||'';initialIntentLoaded=true}lastConfirmedActionId=state.actions.find(x=>x.operation==='simulated_send_and_update_followup'&&x.status==='CONFIRMED')?.action_id||null;render();$('#health').textContent='healthy · '+new Date().toLocaleTimeString()}
-$('#reload').onclick=async()=>{contactId=null;reportId=null;pending=null;$('#draftbox').textContent='Choose a contact and report to prepare a draft.';$('#approve').disabled=true;$('#evidence').textContent='No verified effect yet.';await refresh()};
-$('#revise').onclick=async()=>{try{const m=state.missions.find(x=>x.mission_id==='mission_demo');const x=await api('/api/mission/revise',{mission_id:m.mission_id,expected_revision:m.intent_revision,original_request:$('#intent').value});$('#revmsg').textContent=`Saved revision ${x.intent_revision}; old actions are now stale.`;pending=null;$('#approve').disabled=true;await refresh()}catch(e){$('#revmsg').textContent=e.message}};
-let recognition=null;const SpeechRecognition=window.SpeechRecognition||window.webkitSpeechRecognition;if(SpeechRecognition){recognition=new SpeechRecognition();recognition.continuous=true;recognition.interimResults=true;recognition.lang=navigator.language||'en-US';recognition.onstart=()=>{$('#voicebadge').textContent='LISTENING';$('#voiceStart').disabled=true;$('#voiceStop').disabled=false;$('#revmsg').textContent='Listening…'};recognition.onerror=e=>{$('#revmsg').textContent='Speech recognition error: '+e.error};recognition.onend=()=>{$('#voicebadge').textContent='DICTATION';$('#voiceStart').disabled=false;$('#voiceStop').disabled=true};recognition.onresult=e=>{let finalText='';let interim='';for(let i=e.resultIndex;i<e.results.length;i++){if(e.results[i].isFinal)finalText+=e.results[i][0].transcript;else interim+=e.results[i][0].transcript}if(finalText){const old=$('#intent').value.trim();$('#intent').value=(old?old+' ':'')+finalText.trim()}$('#revmsg').textContent=interim?'Hearing: '+interim:'Transcript ready for review.'};$('#voiceStart').onclick=()=>{try{$('#intent').value='';recognition.start()}catch(e){$('#revmsg').textContent=e.message}};$('#voiceStop').onclick=()=>recognition.stop()}else{$('#voiceStart').disabled=true;$('#voiceStop').disabled=true;$('#voicebadge').textContent='UNAVAILABLE';$('#revmsg').textContent='This browser does not expose Web Speech recognition; text entry remains available.'}
-let narrationEnabled=false;function speak(message){if(!narrationEnabled||!window.speechSynthesis)return;window.speechSynthesis.cancel();const utterance=new SpeechSynthesisUtterance(message);utterance.rate=1;window.speechSynthesis.speak(utterance)}
-const narrationButton=document.createElement('button');narrationButton.id='narration';narrationButton.textContent='Narration off';narrationButton.setAttribute('aria-label','Toggle spoken feedback');narrationButton.disabled=!window.speechSynthesis;narrationButton.onclick=()=>{narrationEnabled=!narrationEnabled;narrationButton.textContent=narrationEnabled?'Narration on':'Narration off';if(narrationEnabled)speak('Spoken feedback is on.');else window.speechSynthesis.cancel()};$('#voiceStop').after(narrationButton);
-function handleVoiceCommand(phrase){const command=phrase.trim().toLowerCase().replace(/[.!?]+$/,'');if(command==='resolve stop'||command==='emergency stop'){$('#estop').click();return true}if(command==='resolve resume'){$('#resume').click();return true}if(command==='resolve discover'){$('#discover').click();return true}if(command==='resolve submit'){$('#revise').click();return true}if(command==='resolve prepare'){$('#draft').click();return true}if(command==='resolve approve simulated send'){if(pending)$('#approve').click();else $('#revmsg').textContent='No action is waiting for approval.';return true}if(command==='resolve choose northwind alex'){const matches=(state?.entities||[]).filter(e=>e.kind==='contact'&&e.display_name.toLowerCase().includes('alex')&&e.context==='Northwind account');if(matches.length===1){contactId=matches[0].entity_id;render();$('#revmsg').textContent='Northwind Alex selected.'}else $('#revmsg').textContent='Contact remains ambiguous.';return true}if(command==='resolve choose latest report'){const context=state?.missions?.find(m=>m.mission_id==='mission_demo')?.constraints?.client;const rows=(state?.entities||[]).filter(e=>e.kind==='document'&&e.context===context&&e.modified_at).sort((a,b)=>b.modified_at.localeCompare(a.modified_at));if(rows.length&&(!rows[1]||rows[0].modified_at!==rows[1].modified_at)){reportId=rows[0].entity_id;render();$('#revmsg').textContent='Latest report selected.'}else $('#revmsg').textContent='Report version remains ambiguous.';return true}return false}
-if(recognition){const originalResult=recognition.onresult;recognition.onresult=e=>{let finalText='';for(let i=e.resultIndex;i<e.results.length;i++)if(e.results[i].isFinal)finalText+=e.results[i][0].transcript;if(finalText&&handleVoiceCommand(finalText))return;originalResult(e)}}
-if(recognition)$('#voicebadge').textContent='DICTATION READY';
-$('#draft').onclick=async()=>{try{if(!contactId||!reportId)throw Error('Select one contact and one report first.');pending=await api('/api/action/draft',{contact_id:contactId,report_id:reportId});$('#draftbox').innerHTML=`<p><b>${esc(pending.contact.display_name)}</b> (${esc(pending.contact.stable_id)})</p><p>Attachment: <b>${esc(pending.report.display_name)}</b> ${esc(pending.report.version)}</p><p>Action digest: <code>${pending.digest}</code></p><div class="notice">This exact operation is waiting for approval. Nothing has been sent.</div>`;$('#approve').disabled=false;$('#actionmsg').textContent='Approval is bound to this digest and mission revision.';await refresh()}catch(e){$('#actionmsg').textContent=e.message}};
-$('#approve').onclick=async()=>{if(!pending)return;$('#approve').disabled=true;try{const r=await api('/api/action/approve-send',{action_id:pending.action.action_id,digest:pending.digest});$('#evidence').innerHTML=`<div class="metric ${r.verification.status==='CONFIRMED'?'success':''}">${r.verification.status}</div><p>Local simulator independently checked one matching outbox message and the follow-up record.</p><p>Recipient ID: <code>${esc(r.verification.evidence.recipient_id)}</code></p><p>Attachment ID: <code>${esc(r.verification.evidence.attachment_id)}</code></p><p>Message ID: <code>${esc(r.verification.evidence.message_id)}</code></p><p>Follow-up: <code>${esc(r.verification.evidence.followup_id)}</code> · ${esc(r.verification.evidence.followup_status)} · linked message ${esc(r.verification.evidence.followup_last_message_id)}</p><p class="muted">Evidence source: ${esc(r.verification.evidence.source)} · ${esc(r.verification.evidence.sent_at)}</p>`;pending=null;await refresh()}catch(e){$('#actionmsg').textContent=e.message;$('#approve').disabled=false}};
-$('#windows').onclick=async()=>{try{const r=await api('/api/windows');windowSnapshot=r.windows.find(w=>w.foreground)?.snapshot_id||null;$('#hwnd').innerHTML='<option value="">Choose a visible window…</option>'+r.windows.map(w=>`<option value="${w.hwnd}" ${w.foreground?'selected':''}>${esc(w.title)} · PID ${w.pid}${w.foreground?' · foreground':''}</option>`).join('');$('#winlog').textContent=JSON.stringify(r,null,2)}catch(e){$('#winlog').textContent='Observation unavailable: '+e.message}};
-async function winAction(kind){try{const hwnd=$('#hwnd').value;if(!hwnd)throw Error('Inspect and select a window first.');if(!windowSnapshot)throw Error('Inspect windows to obtain a fresh snapshot.');const mission=state.missions.find(x=>x.mission_id==='mission_demo');const payload={hwnd:Number(hwnd),snapshot_id:windowSnapshot,mission_id:mission.mission_id,intent_revision:mission.intent_revision};if(kind==='move'||kind==='click'){if(!$('#px').value||!$('#py').value)throw Error('Enter screen coordinates within the selected window.');payload.x=Number($('#px').value);payload.y=Number($('#py').value)}if(kind==='type'){payload.text=$('#typevalue').value;if(!payload.text)throw Error('Enter text to type.')}const r=await api('/api/windows/'+kind,payload);windowSnapshot=null;$('#winlog').textContent=JSON.stringify(r,null,2)+'\nRefresh window observation before the next input.';await refresh()}catch(e){windowSnapshot=null;$('#winlog').textContent='Action refused: '+e.message+' Refresh window observation before retrying.'}}
-$('#move').onclick=()=>winAction('move');$('#click').onclick=()=>winAction('click');$('#type').onclick=()=>winAction('type');api('/api/health').then(()=>refresh()).catch(e=>$('#health').textContent='offline: '+e.message);
-$('#discover').onclick=async()=>{try{$('#agentlog').textContent='Running contact and report specialists…';const r=await api('/api/agents/discover',{mission_id:'mission_demo'});$('#agentlog').textContent=JSON.stringify(r,null,2);await refresh()}catch(e){$('#agentlog').textContent='Agent run failed: '+e.message}};
-$('#estop').onclick=async()=>{try{const r=await api('/api/emergency-stop',{});windowSnapshot=null;$('#agentlog').textContent=JSON.stringify(r,null,2)}catch(e){$('#agentlog').textContent=e.message}};
-$('#resume').onclick=async()=>{try{const r=await api('/api/resume',{});$('#agentlog').textContent=JSON.stringify(r,null,2)}catch(e){$('#agentlog').textContent=e.message}};
-api('/api/benchmark').then(r=>{$('#benchlog').textContent=`Seed ${r.seeds.join(', ')} · ${r.sample_size} cases · ${r.method}\n\n`+Object.entries(r.modes).map(([name,m])=>`${name}: correct ${Math.round(m.objective_accuracy*m.n)}/${m.n}, wrong target ${Math.round(m.wrong_target_rate*m.n)}/${m.n}, false success ${Math.round(m.false_success_rate*m.n)}/${m.n}, duplicate effects ${Math.round(m.duplicate_effect_rate*m.n)}/${m.n}`).join('\n')}).catch(e=>{$('#benchlog').textContent='No recorded benchmark available: '+e.message});
-api('/api/workspaces').then(r=>{$('#workspaceCount').textContent=`${r.total_concepts} planned concepts · ${r.workspaces.length} workspaces`;$('#workspace').innerHTML='<option value="">Choose a workspace…</option>'+r.workspaces.map(x=>`<option value="${esc(x.name)}">${esc(x.name)} (${x.planned_concepts})</option>`).join('')}).catch(e=>{$('#workspacelog').textContent=e.message});
-$('#workspace').onchange=async()=>{const name=$('#workspace').value;if(!name){$('#workspacelog').textContent='Choose a workspace to inspect planned concepts.';return}try{const r=await api('/api/workspaces?workspace='+encodeURIComponent(name));$('#workspacelog').textContent=r.concepts.map(x=>`${x.name} · ${x.implementation_status} · ${x.source_reference}`).join('\n')}catch(e){$('#workspacelog').textContent=e.message}};
-const oldRevise=$('#revise').onclick;$('#revise').onclick=async event=>{await oldRevise(event);const mission=state?.missions?.find(x=>x.mission_id==='mission_demo');if(mission&&$('#revmsg').textContent.startsWith('Saved revision'))speak('Mission revision '+mission.intent_revision+'. Status '+mission.status.toLowerCase().replaceAll('_',' ')+'.')};
-const oldDraft=$('#draft').onclick;$('#draft').onclick=async event=>{pending=null;$('#approve').disabled=true;await oldDraft(event);if(pending)speak('Draft ready for '+pending.contact.display_name+', '+pending.contact.context+', with report '+pending.report.version+'. Say Resolve approve simulated send to approve this local simulator action.')};
-const oldApprove=$('#approve').onclick;$('#approve').onclick=async event=>{await oldApprove(event);const status=$('#evidence .metric')?.textContent;if(status)speak('Local simulator effect '+status.toLowerCase()+'.')};
-const oldDiscover=$('#discover').onclick;$('#discover').onclick=async event=>{await oldDiscover(event);if($('#agentlog').textContent.includes('SUCCEEDED')){const candidates=(state?.entities||[]).filter(e=>e.kind==='contact'&&e.display_name.toLowerCase().includes('alex'));speak('The contact and report agents finished. I found '+candidates.length+' Alex contacts: '+candidates.map(e=>e.context).join(' and ')+'. Say Resolve choose Northwind Alex to clarify the recipient.')}};
-const oldStop=$('#estop').onclick;$('#estop').onclick=async event=>{window.speechSynthesis?.cancel();await oldStop(event)};
-['#contacts','#reports'].forEach(selector=>$(selector).addEventListener('change',()=>{pending=null;$('#approve').disabled=true;$('#draftbox').textContent='Selection changed. Prepare a new draft before approval.'}));
-const captureButton=document.createElement('button');captureButton.id='capture';captureButton.textContent='Capture selected window';$('#windows').after(captureButton);const frame=document.createElement('img');frame.id='frame';frame.alt='Actual captured pixels from the selected foreground window';frame.style.cssText='display:none;max-width:100%;max-height:420px;border:1px solid #3c4a5c;border-radius:8px;margin-top:12px';$('#winlog').after(frame);let frameUrl=null;
-captureButton.onclick=async()=>{try{const hwnd=$('#hwnd').value;if(!hwnd||!windowSnapshot)throw Error('Inspect and select a fresh foreground window first.');const mission=state.missions.find(x=>x.mission_id==='mission_demo');const capture=await api('/api/windows/capture',{mission_id:mission.mission_id,intent_revision:mission.intent_revision,hwnd:Number(hwnd),snapshot_id:windowSnapshot});const response=await fetch('/api/evidence/'+encodeURIComponent(capture.image_name),{headers:{'X-Resolve-Token':sessionToken}});if(!response.ok)throw Error('Could not load captured evidence');if(frameUrl)URL.revokeObjectURL(frameUrl);frameUrl=URL.createObjectURL(await response.blob());frame.src=frameUrl;frame.style.display='block';$('#winlog').textContent=JSON.stringify(capture,null,2)}catch(e){$('#winlog').textContent='Capture unavailable: '+e.message}};
-const uiaButton=document.createElement('button');uiaButton.id='uiaInspect';uiaButton.textContent='Inspect UI elements';captureButton.after(uiaButton);uiaButton.onclick=async()=>{try{const hwnd=$('#hwnd').value;if(!hwnd||!windowSnapshot)throw Error('Inspect and select a fresh foreground window first.');const mission=state.missions.find(x=>x.mission_id==='mission_demo');const tree=await api('/api/uia/inspect',{mission_id:mission.mission_id,intent_revision:mission.intent_revision,hwnd:Number(hwnd),snapshot_id:windowSnapshot});$('#winlog').textContent=JSON.stringify(tree,null,2)}catch(e){$('#winlog').textContent='UI Automation inspection unavailable: '+e.message}};
-api('/api/uia/availability').then(r=>{uiaButton.title=r.available?'Read-only UI Automation inspection available':'Optional UI Automation: '+r.reason}).catch(()=>{});
-async function loadSkills(){const listing=await api('/api/skills');const active=listing.skills.filter(x=>x.status==='ACTIVE');$('#skillList').innerHTML='<option value="">Choose active skill…</option>'+active.map(x=>`<option value="${esc(x.skill_id)}">${esc(x.spec.name)} · v${x.version}</option>`).join('');const proposal=listing.skills.find(x=>x.status==='PENDING_APPROVAL');if(proposal){skillProposal={skill:proposal.spec,review_digest:proposal.review_digest};$('#skillActivate').disabled=false;$('#skilllog').textContent='Review pending skill and digest before activation:\n'+JSON.stringify(skillProposal,null,2)}}
-$('#skillPropose').onclick=async()=>{try{if(!lastConfirmedActionId)throw Error('Complete and verify a local simulator action first.');skillProposal=await api('/api/skills/propose',{action_id:lastConfirmedActionId});$('#skillActivate').disabled=false;$('#skilllog').textContent='Review this exact skill and digest before activation:\n'+JSON.stringify(skillProposal,null,2)}catch(e){$('#skilllog').textContent='Skill proposal refused: '+e.message}};
-$('#skillActivate').onclick=async()=>{try{if(!skillProposal)throw Error('No skill proposal is ready.');const r=await api('/api/skills/activate',{skill_id:skillProposal.skill.skill_id,version:skillProposal.skill.version,review_digest:skillProposal.review_digest});$('#skilllog').textContent='Activated reviewed skill:\n'+JSON.stringify(r,null,2);skillProposal=null;$('#skillActivate').disabled=true;await loadSkills()}catch(e){$('#skilllog').textContent='Skill activation refused: '+e.message}};
-$('#skillReplay').onclick=async()=>{try{const skillId=$('#skillList').value;if(!skillId)throw Error('Select an active skill.');if(!contactId)throw Error('Select the intended contact first.');const mission=state.missions.find(x=>x.mission_id==='mission_demo');const r=await api('/api/skills/replay',{skill_id:skillId,mission_id:mission.mission_id,expected_revision:mission.intent_revision,inputs:{context:mission.constraints.client,contact_id:contactId}});pending=r.draft;contactId=r.plan.contact.entity_id;reportId=r.plan.report.entity_id;render();$('#approve').disabled=false;$('#draftbox').innerHTML=`<p><b>${esc(pending.contact.display_name)}</b> · ${esc(pending.contact.stable_id)}</p><p>Current attachment: ${esc(pending.report.display_name)} · ${esc(pending.report.version)}</p><p>Action digest: <code>${esc(pending.digest)}</code></p><div class="notice">Skill replay prepared a new local draft. Approval is still required.</div>`;$('#skilllog').textContent=JSON.stringify(r.plan,null,2);await refresh()}catch(e){$('#skilllog').textContent='Skill replay refused: '+e.message}};
-loadSkills().catch(e=>{$('#skilllog').textContent='Skill registry unavailable: '+e.message});
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Mission Control — RESOLVE</title>
+<link rel="icon" href="/static/mark.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/static/app.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="topbar">
+  <a class="brand" href="/" aria-label="RESOLVE home page"><img src="/static/mark.svg" alt="" width="26" height="26"><span>RESOLVE</span><small>Mission Control</small></a>
+  <div class="topbar-status" role="status" aria-live="polite"><span class="chip chip-muted" id="healthChip"><span class="led" aria-hidden="true"></span><span id="health">connecting…</span></span></div>
+  <div class="topbar-actions">
+    <button id="estop" class="btn btn-danger" title="Cancel pending agent tasks and revoke the cursor lease">Emergency stop</button>
+    <button id="resume" class="btn" title="Clear the emergency stop so agents and input can run again">Resume control</button>
+  </div>
+</header>
+<div id="statusStrip" class="status-strip" role="region" tabindex="0" aria-label="Runtime capabilities"><span class="chip chip-muted">Loading runtime status…</span></div>
 
-(function(){const $=id=>document.getElementById(id);let mid=null,plan=null,es=null;try{mid=localStorage.getItem('wm_mid')}catch(e){}
-const show=m=>{$('wmstate').textContent=JSON.stringify({status:m.status,revision:m.intent_revision,binding:m.binding,report:m.report&&{id:m.report.id,version:m.report.version,sha256:m.report.sha256.slice(0,12)},actions:(m.actions_detail||[]).map(a=>({op:a.operation,status:a.status,verification:a.verification&&a.verification.status}))},null,2);
- $('wmcands').innerHTML='';if(m.status==='NEEDS_CLARIFICATION'){m.candidates.forEach(c=>{const b=document.createElement('button');b.textContent='Choose '+c.id+' · '+c.email+' ('+c.org+'/'+c.dept+')';b.onclick=()=>step(()=>api('/api/web/missions/'+mid+'/bind',{contact_id:c.id,revision:m.intent_revision}));$('wmcands').appendChild(b)});$('wmmsg').textContent=m.ambiguity_reason}
- const acts=m.actions_detail||[],task=acts.find(a=>a.operation==='crm_create_task'),send=acts.find(a=>a.operation==='outbox_send');
- $('wmplan').disabled=!m.binding||acts.length>0&&!send||(send&&send.status==='CONFIRMED');$('wmapprove').disabled=!(send&&send.status==='NEEDS_APPROVAL');$('wmtask').disabled=!(task&&task.status==='BOUND');$('wmsend').disabled=!(send&&send.status==='AUTHORIZED');$('wmfault').disabled=!mid;};
-async function refresh(){if(!mid)return;const m=await api('/api/web/missions/'+mid);show(m);return m}
-async function step(f){try{$('wmmsg').textContent='Working…';const r=await f();await refresh();$('wmmsg').textContent=r&&r.status?'Result: '+r.status:'Done'}catch(e){$('wmmsg').textContent='Refused: '+e.message;await refresh().catch(()=>{})}}
-function connect(){if(es)es.close();es=new EventSource('/api/stream?after=0&max_s=3600');es.onopen=()=>{$('wmstream').textContent=''};es.onerror=()=>{$('wmstream').textContent+='\n[stream disconnected]'};
- es.onmessage=()=>{};['proposed','bound','needs_approval','authorized','ready','dispatching','dispatched','observing','confirmed','failed','uncertain','wrong_target','superseded'].forEach(k=>es.addEventListener('action.'+k,ev=>{const d=JSON.parse(ev.data);$('wmstream').textContent+='#'+d.seq+' '+d.state+' '+d.action_id+'\n'}))}
-$('wmstart').onclick=()=>step(async()=>{await api('/api/web/world',{});const m=await api('/api/web/missions',{command:$('wmcmd').value});mid=m.mission_id;try{localStorage.setItem('wm_mid',mid)}catch(e){}connect();return m});
-$('wmplan').onclick=()=>step(async()=>{plan=await api('/api/web/missions/'+mid+'/plan',{});$('wmmsg').textContent='Approval digest '+plan.approval_digest.slice(0,16)+'…';return plan});
-$('wmapprove').onclick=()=>step(async()=>{const m=await api('/api/web/missions/'+mid);const send=m.actions_detail.find(a=>a.operation==='outbox_send');const d=plan&&plan.send_action===send.action_id?plan.approval_digest:null;if(!d)throw Error('plan again in this session to see the exact digest');return api('/api/web/actions/'+send.action_id+'/approve',{digest:d})});
-$('wmtask').onclick=()=>step(async()=>{const m=await api('/api/web/missions/'+mid);return api('/api/web/actions/'+m.actions_detail.find(a=>a.operation==='crm_create_task').action_id+'/run',{})});
-$('wmsend').onclick=()=>step(async()=>{const m=await api('/api/web/missions/'+mid);return api('/api/web/actions/'+m.actions_detail.find(a=>a.operation==='outbox_send').action_id+'/run',{})});
-$('wmfault').onclick=()=>step(()=>api('/api/web/faults',{app:'outbox',name:'drop_ack'}));
-if(mid){api('/api/web/missions/'+mid).then(m=>{show(m);connect()}).catch(()=>{})}})();
-</script></body></html>
+<div class="shell" id="dashboard">
+  <nav class="sidebar" aria-label="Mission Control sections">
+    <ul>
+      <li><a href="#view-mission" data-view="mission" aria-current="page"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h4l3-7 3 14 3-7h3"/></svg>Browser mission</a></li>
+      <li><a href="#view-agents" data-view="agents"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="6" cy="6" r="2.5"/><circle cx="18" cy="6" r="2.5"/><circle cx="12" cy="18" r="2.5"/><path d="M7.5 8l3.5 8M16.5 8L13 16"/></svg>Agents</a></li>
+      <li><a href="#view-skills" data-view="skills"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h14v16H5zM9 8h6M9 12h6M9 16h3"/></svg>Skills</a></li>
+      <li><a href="#view-files" data-view="files"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h7l2 2h9v11H3z"/></svg>Files sandbox</a></li>
+      <li><a href="#view-bench" data-view="bench"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 20V10M12 20V4M19 20v-7"/></svg>Benchmarks</a></li>
+      <li><a href="#view-sim" data-view="sim"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3a3 3 0 0 1 3 3v6a3 3 0 0 1-6 0V6a3 3 0 0 1 3-3zM5 11a7 7 0 0 0 14 0M12 18v3"/></svg>Voice &amp; simulator</a></li>
+      <li><a href="#view-windows" data-view="windows"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 5h18v12H3zM8 21h8M12 17v4"/></svg>Windows native</a></li>
+      <li><a href="#view-ledger" data-view="ledger"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h14v16H5zM8 8h8M8 12h8M8 16h5"/></svg>Ledger &amp; registry</a></li>
+    </ul>
+    <p class="sidebar-note">Local prototype on 127.0.0.1. Outbox is <b>SIMULATED DELIVERY</b>. Browser actions are DOM-level (Playwright), not physical cursor movement.</p>
+  </nav>
+
+  <main id="main" tabindex="-1">
+    <!-- ============ BROWSER MISSION ============ -->
+    <section class="view" id="view-mission" data-view="mission" aria-labelledby="h-mission">
+      <div class="view-head">
+        <div><h1 id="h-mission">Browser mission</h1><p class="muted">The signature workflow: resolve the right contact, pin the report version, approve the exact send, and reconcile a lost acknowledgement — verified in each fixture app's own database.</p></div>
+      </div>
+      <div class="grid">
+        <section class="card span8 hero-card" id="webmission" aria-labelledby="h-wm">
+          <div class="card-head"><h2 id="h-wm">Run a mission</h2><span class="chip chip-warn" id="wmbadge">FIXTURE APPS · DOM-LEVEL (NOT PHYSICAL CURSOR)</span></div>
+          <p class="muted small">Drives three separate local fixture apps (CRM, reports, outbox: SIMULATED DELIVERY) through Playwright and verifies each effect straight from their databases.</p>
+          <label class="label" for="wmcmd">Mission command</label>
+          <textarea id="wmcmd">Prepare a follow-up for Jordan Lee using the latest report, update the CRM and send it after I approve.</textarea>
+          <ol class="stepper" aria-label="Mission steps">
+            <li><button class="btn btn-primary" id="wmstart">Start mission</button></li>
+            <li><button class="btn" id="wmplan" disabled title="Available after the contact is bound by stable ID">Plan actions</button></li>
+            <li><button class="btn" id="wmtask" disabled title="Available after planning, while the CRM task is BOUND">Run CRM task</button></li>
+            <li><button class="btn" id="wmapprove" disabled title="Available when the send action is NEEDS_APPROVAL">Approve exact send</button></li>
+            <li><button class="btn btn-warn" id="wmfault" disabled title="Available once a mission exists; makes the outbox drop its next acknowledgement">Arm lost-acknowledgement fault</button></li>
+            <li><button class="btn btn-primary" id="wmsend" disabled title="Available after the exact send is approved (AUTHORIZED)">Run send</button></li>
+          </ol>
+          <div id="wmcands" class="cands" aria-live="polite"></div>
+          <p id="wmmsg" class="msg" aria-live="polite"></p>
+          <div id="wmactions" class="action-list" aria-live="polite"></div>
+          <details class="raw" open><summary>Mission state (from <code>GET /api/web/missions/{id}</code>)</summary><pre class="log" id="wmstate">No browser mission yet.</pre></details>
+        </section>
+
+        <aside class="span4 stack">
+          <section class="card" aria-labelledby="h-sessions">
+            <div class="card-head"><h2 id="h-sessions">Sessions</h2><button class="btn btn-small" id="missionsReload">Refresh</button></div>
+            <ul id="missionList" class="session-list" aria-live="polite"><li class="muted">Loading…</li></ul>
+          </section>
+          <section class="card" aria-labelledby="h-stream">
+            <div class="card-head"><h2 id="h-stream">Live ledger stream</h2><span class="chip chip-muted" id="streamChip">SSE</span></div>
+            <pre class="log log-tall" id="wmstream" aria-live="off">Not connected.</pre>
+          </section>
+        </aside>
+
+        <section class="card span12" aria-labelledby="h-utter">
+          <div class="card-head"><h2 id="h-utter">Talk to the mission</h2><span class="chip chip-muted" id="utterMicChip">checking speech…</span></div>
+          <p class="muted small">Refine, correct, cancel, approve or ask about the selected mission. The server classifies the utterance; nothing runs until you press <b>Submit utterance</b>. Partial speech never executes.</p>
+          <label class="label" for="utterText">Utterance for the selected mission</label>
+          <textarea id="utterText" placeholder="e.g. “Actually, use the Jordan Lee in Operations.”"></textarea>
+          <div class="row">
+            <button class="btn" id="utterMic" disabled>Start microphone</button>
+            <button class="btn btn-primary" id="utterSubmit" disabled title="Select or start a mission first">Submit utterance</button>
+            <span id="utterHint" class="muted small" aria-live="polite"></span>
+          </div>
+          <div id="utterResult" class="msg" aria-live="polite"></div>
+          <ol id="utterHistory" class="utter-history"></ol>
+        </section>
+      </div>
+    </section>
+
+    <!-- ============ AGENTS ============ -->
+    <section class="view" id="view-agents" data-view="agents" aria-labelledby="h-agents" hidden>
+      <div class="view-head"><div><h1 id="h-agents">Agents</h1><p class="muted">Specialists run under a supervisor. Timings below are the real <code>started_at</code>/<code>finished_at</code> values returned by the server.</p></div></div>
+      <div class="grid">
+        <section class="card span8" aria-labelledby="h-sup">
+          <div class="card-head"><h2 id="h-sup">Supervisor run</h2><div class="row" style="margin:0"><label class="sr-only" for="supervisePhase">Supervisor phase</label><select id="supervisePhase"><option value="investigate">Investigate (read-only)</option><option value="execute">Execute (browser + verifier)</option></select><button class="btn btn-primary" id="supervise" disabled title="Select or start a browser mission first">Supervise selected mission</button></div></div>
+          <p class="muted small" id="superviseFor">No mission selected.</p>
+          <div id="taskTimeline" class="timeline" aria-live="polite"><p class="muted">No supervisor run yet.</p></div>
+          <div id="superviseSummary" class="msg"></div>
+        </section>
+        <section class="card span4" aria-labelledby="h-roster">
+          <div class="card-head"><h2 id="h-roster">Roster</h2></div>
+          <ul id="agentRoster" class="roster"><li class="muted">Loading…</li></ul>
+        </section>
+        <section class="card span12" id="agentsSection" aria-labelledby="h-disc">
+          <div class="card-head"><h2 id="h-disc">Desktop-simulator resolvers</h2><button class="btn" id="discover">Run resolver agents</button></div>
+          <p class="muted small">The contact and report specialists inspect local simulator records in parallel. Emergency stop (top bar) cancels pending tasks and revokes the cursor lease.</p>
+          <pre class="log" id="agentlog">No agent run yet.</pre>
+        </section>
+      </div>
+    </section>
+
+    <!-- ============ SKILLS ============ -->
+    <section class="view" id="view-skills" data-view="skills" aria-labelledby="h-skills" hidden>
+      <div class="view-head"><div><h1 id="h-skills">Skills</h1><p class="muted">Record a semantic browser skill, review and approve an exact version, then replay it — optionally under a layout shift.</p></div></div>
+      <div class="grid">
+        <section class="card span6" aria-labelledby="h-rec">
+          <h2 id="h-rec">Record browser skill</h2>
+          <div class="form-grid">
+            <label class="label" for="skillContact">Contact ID (stable)</label><input id="skillContact" value="C-104" autocomplete="off">
+            <label class="label" for="skillTitle">Task title</label><input id="skillTitle" value="Follow up on latest report" autocomplete="off">
+          </div>
+          <div class="row"><button class="btn btn-primary" id="skillRecord">Record skill</button><label class="check"><input type="checkbox" id="skillFault"> Replay with <code>layout_shift</code> fault</label></div>
+          <p class="muted small">Replay uses the contact ID and title above as parameters.</p>
+        </section>
+        <section class="card span6" aria-labelledby="h-skl">
+          <div class="card-head"><h2 id="h-skl">Recorded skills</h2><button class="btn btn-small" id="webSkillsReload">Refresh</button></div>
+          <ul id="webSkills" class="skill-list"><li class="muted">Loading…</li></ul>
+        </section>
+        <section class="card span12"><h2>Skill result</h2><pre class="log" id="webSkillLog">No skill action yet.</pre></section>
+        <section class="card span12" id="skillsSection" aria-labelledby="h-lskill">
+          <h2 id="h-lskill">Learned local simulator skill</h2>
+          <p class="muted small">Save a confirmed local simulator workflow as a semantic skill. Review its exact content digest before activation. Replay prepares a fresh draft that still needs approval.</p>
+          <div class="row"><button class="btn" id="skillPropose">Propose skill from confirmed action</button><button class="btn" id="skillActivate" disabled title="Available when a proposal is pending review">Approve skill activation</button><select id="skillList" aria-label="Active skill"><option value="">No active skill selected</option></select><button class="btn" id="skillReplay">Prepare semantic replay</button></div>
+          <pre class="log" id="skilllog">No skill action yet.</pre>
+        </section>
+      </div>
+    </section>
+
+    <!-- ============ FILES ============ -->
+    <section class="view" id="view-files" data-view="files" aria-labelledby="h-files" hidden>
+      <div class="view-head"><div><h1 id="h-files">Files sandbox</h1><p class="muted">Inventory, find duplicates, plan a tidy-up, apply it and undo it — confined to the server's test workspace. Nothing outside the sandbox is touched.</p></div></div>
+      <div class="grid">
+        <section class="card span12">
+          <ol class="stepper" aria-label="File steps">
+            <li><button class="btn" id="filesSeed" title="Writes three small demo files (one duplicate) inside the sandbox only">Seed demo files</button></li>
+            <li><button class="btn" id="filesInventory">Inventory</button></li>
+            <li><button class="btn" id="filesDuplicates">Find duplicates</button></li>
+            <li><button class="btn btn-primary" id="filesPlan">Plan changes</button></li>
+            <li><button class="btn" id="filesApply" disabled title="Create a plan first">Apply plan</button></li>
+            <li><button class="btn btn-warn" id="filesUndo" disabled title="Apply a plan first">Undo last apply</button></li>
+          </ol>
+          <p id="filesMsg" class="msg" aria-live="polite"></p>
+          <div id="filesView"></div>
+          <details class="raw"><summary>Raw response</summary><pre class="log" id="filesLog">No file operation yet.</pre></details>
+        </section>
+      </div>
+    </section>
+
+    <!-- ============ BENCHMARKS ============ -->
+    <section class="view" id="view-bench" data-view="bench" aria-labelledby="h-bench" hidden>
+      <div class="view-head"><div><h1 id="h-bench">Benchmarks</h1><p class="muted">Recorded results only. Nothing here is computed in the browser.</p></div></div>
+      <div class="grid">
+        <section class="card span12" aria-labelledby="h-wb">
+          <h2 id="h-wb">Browser fixture benchmark</h2>
+          <div class="table-scroll" tabindex="0" role="region" aria-labelledby="h-wb"><table><thead><tr><th scope="col">Policy</th><th scope="col" class="num">Runs</th><th scope="col" class="num">Unsafe or false</th><th scope="col">Wilson 95%</th><th scope="col">Verdicts</th></tr></thead><tbody id="webBench"><tr><td colspan="5" class="muted">Loading…</td></tr></tbody></table></div>
+          <p class="muted small" id="webBenchNote"></p>
+        </section>
+        <section class="card span12" id="benchmarksSection"><h2>Measured simulator benchmark</h2><p class="muted small">Seeded SQLite cases only. These figures do not measure live Windows GUI reliability.</p><pre class="log" id="benchlog">Loading recorded result…</pre></section>
+      </div>
+    </section>
+
+    <!-- ============ VOICE & SIMULATOR ============ -->
+    <section class="view" id="view-sim" data-view="sim" aria-labelledby="h-sim" hidden>
+      <div class="view-head"><div><h1 id="h-sim">Voice console &amp; desktop simulator</h1><p class="muted">One local simulator workspace. Simulator state is labeled clearly.</p></div><button class="btn" id="reload">Refresh mission</button></div>
+      <div class="grid">
+        <section class="card span8" id="voiceSection"><div class="card-head"><h2>Voice console</h2><span class="chip chip-warn" id="voicebadge">TEXT INPUT</span></div><p class="muted small">Use dictation if your browser exposes Web Speech recognition. Transcription may use your browser vendor's speech service. Review the editable transcript before submitting it.</p><label class="label" for="intent">Editable mission intent</label><textarea id="intent">Find the latest report for our client, update the follow-up record, and send the correct report to the intended contact after I approve.</textarea><div class="row"><button class="btn" id="voiceStart">Start dictation</button><button class="btn" id="voiceStop" disabled title="Available while dictating">Stop dictation</button><button class="btn btn-primary" id="revise">Revise mission intent</button><span id="revmsg" class="muted small" aria-live="polite"></span></div></section>
+        <section class="card span4" id="missionSection"><h2>Current mission</h2><div id="mission"></div></section>
+        <section class="card span6" id="entitiesSection"><h2>Resolve target entities</h2><p class="muted small">Two contacts share a name. Context and stable IDs are shown for explicit selection.</p><div id="contacts" class="stack"></div></section>
+        <section class="card span6" id="reportsSection"><h2>Select report version</h2><p class="muted small">Freshness policy: latest modification timestamp. Name sorting is not used.</p><div id="reports" class="stack"></div></section>
+        <section class="card span6" id="approvalSection"><h2>Prepared action</h2><div id="draftbox" class="muted">Choose a contact and report to prepare a draft.</div><div class="row"><button class="btn btn-primary" id="draft">Prepare send for approval</button><button class="btn" id="approve" disabled title="Prepare a draft first">Approve exact action</button></div><p id="actionmsg" class="muted small"></p></section>
+        <section class="card span6" id="evidenceSection"><h2>Independent outcome evidence</h2><div id="evidence" class="muted">No verified effect yet.</div></section>
+      </div>
+    </section>
+
+    <!-- ============ WINDOWS ============ -->
+    <section class="view" id="view-windows" data-view="windows" aria-labelledby="h-win" hidden>
+      <div class="view-head"><div><h1 id="h-win">Windows native control</h1><p class="muted">Window discovery and foreground checks use Win32. Click/move/type require the target HWND to still be foreground and coordinates inside the selected window. This needs an interactive Windows session.</p></div></div>
+      <div class="grid">
+        <section class="card span12" id="computerSection"><div class="card-head"><h2>Live computer</h2><span class="chip chip-warn" id="winChip">WIN32 · GUARDED INPUT</span></div>
+          <p id="winAvail" class="msg" aria-live="polite"></p>
+          <div class="row"><button class="btn" id="windows">Inspect windows</button><select id="hwnd" aria-label="Target window"><option value="">Choose a visible window…</option></select></div>
+          <div class="row"><input id="px" placeholder="screen x" aria-label="Screen x coordinate" type="number" class="num-in"><input id="py" placeholder="screen y" aria-label="Screen y coordinate" type="number" class="num-in"><button class="btn" id="move">Move pointer</button><button class="btn" id="click">Click at point</button><input id="typevalue" placeholder="Text to type" aria-label="Text to type"><button class="btn" id="type">Type text</button></div>
+          <pre class="log" id="winlog">No window observation yet.</pre></section>
+      </div>
+    </section>
+
+    <!-- ============ LEDGER ============ -->
+    <section class="view" id="view-ledger" data-view="ledger" aria-labelledby="h-ledger" hidden>
+      <div class="view-head"><div><h1 id="h-ledger">Ledger &amp; registry</h1><p class="muted">Persisted action events from the Causal State Ledger (SQLite).</p></div></div>
+      <div class="grid">
+        <section class="card span12" id="ledgerSection"><h2>Causal ledger</h2><pre class="log log-tall" id="ledger">Loading…</pre></section>
+        <section class="card span12" id="workspacesSection"><h2>Capability registry</h2><p class="muted small">80 competitor-inspired concepts are catalogued as planned work. The list does not imply an adapter exists.</p><div class="row"><select id="workspace" aria-label="Choose workspace"><option value="">Choose a workspace…</option></select><span id="workspaceCount" class="muted small"></span></div><pre class="log" id="workspacelog">Choose a workspace to inspect planned concepts.</pre></section>
+      </div>
+    </section>
+
+    <footer class="foot muted small">No external messages are sent; the outbox is SIMULATED DELIVERY. Native input requires an interactive Windows session (WINDOWS_NATIVE_TESTS_NOT_RUN on Linux build hosts). Data is stored in the local SQLite database.</footer>
+  </main>
+</div>
+<script src="/static/app.js"></script>
+</body>
+</html>
