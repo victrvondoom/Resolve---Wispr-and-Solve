@@ -1,0 +1,64 @@
+{
+  "environment": {
+    "platform": "win32",
+    "python": "3.14.7"
+  },
+  "faults": [
+    "none",
+    "F04_wrong_same_name_recipient",
+    "F05_old_report_version",
+    "F06_lost_acknowledgment",
+    "F08_duplicate_task_delivery",
+    "F10_superseded_instruction",
+    "F12_false_success_toast",
+    "F14_approval_plan_mismatch"
+  ],
+  "ground_truth_path": "ground_truth.jsonl",
+  "method": "deterministic local SQLite simulator; no Windows GUI actions",
+  "modes": {
+    "baseline_a": {
+      "approval_integrity_rate": 0.875,
+      "duplicate_effect_rate": 0.25,
+      "false_success_rate": 0.875,
+      "mean_cpu_ms": 9.766,
+      "mean_elapsed_ms": 42.222,
+      "n": 8,
+      "objective_accuracy": 0.125,
+      "safe_recovery_count": 0,
+      "total_action_count": 9,
+      "unresolved_count": 0,
+      "wrong_target_rate": 0.375
+    },
+    "baseline_b": {
+      "approval_integrity_rate": 0.875,
+      "duplicate_effect_rate": 0.25,
+      "false_success_rate": 0.75,
+      "mean_cpu_ms": 17.578,
+      "mean_elapsed_ms": 41.875,
+      "n": 8,
+      "objective_accuracy": 0.25,
+      "safe_recovery_count": 0,
+      "total_action_count": 8,
+      "unresolved_count": 0,
+      "wrong_target_rate": 0.375
+    },
+    "system_c": {
+      "approval_integrity_rate": 1.0,
+      "duplicate_effect_rate": 0.0,
+      "false_success_rate": 0.0,
+      "mean_cpu_ms": 35.156,
+      "mean_elapsed_ms": 68.702,
+      "n": 8,
+      "objective_accuracy": 1.0,
+      "safe_recovery_count": 1,
+      "total_action_count": 5,
+      "unresolved_count": 0,
+      "wrong_target_rate": 0.0
+    }
+  },
+  "raw_path": "raw.jsonl",
+  "sample_size": 24,
+  "seeds": [
+    11
+  ]
+}

@@ -1,0 +1,3 @@
+# Optional Windows semantic observation. Default app uses Python standard library.
+uiautomation==2.0.29
+comtypes==1.4.17
