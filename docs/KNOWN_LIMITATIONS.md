@@ -1,12 +1,12 @@
-# Known limitations
+# Known limitations (current build)
 
-- The spoken input path depends on browser Web Speech Recognition and may send audio to that browser's speech service. Exact demo commands and optional browser SpeechSynthesis narration exist, but microphone recognition, spoken approval, and barge-in were not exercised in an automated test. Offline transcription and continuous hands-free reliability are not established.
-- The intent interpreter accepts only a narrow deterministic demo pattern. An unfamiliar revision enters `NEEDS_CLARIFICATION`; it cannot safely compile arbitrary spoken goals into executable plans.
-- Optional read-only UI Automation tree inspection works in a project-local virtual environment, but semantic UIA actions, browser DOM/accessibility observations, OCR, target highlighting, and general cross-application execution are not yet integrated into the mission executor. A blocking UIA provider can exceed the adapter's soft deadline.
-- The Win32 controlled GUI test succeeded on this host, but the live mission demo still changes local SQLite simulator state through its API. It does not physically operate three separate instrumented applications end-to-end. No external email is sent.
-- The window generation detects observed focus changes; a focus leave-and-return between observations may escape detection. Snapshots expire after three seconds and bind HWND, PID, bounds, and observed generation. DPI/multiple-monitor behavior needs broader verification.
-- Cursor leases and the file lock coordinate cooperating RESOLVE processes. They cannot prevent another program or user from using the desktop. Native calls cannot be forcibly interrupted mid-call; emergency stop is cooperative between input batches.
-- Agent specialists are trusted Python functions. Capability checks are an application policy, not an OS sandbox. The two demo readers run concurrently, but the full specialist roster, durable handoffs, and distributed scheduling remain unfinished.
-- The seeded benchmark has eight targeted local SQLite conditions and one seed; its results are descriptive for that simulator. It does not measure general Windows GUI reliability, external systems, paid model cost, or the full 16-fault list and ablations.
-- The local HTTP service has a loopback boundary, Host/Origin checks, and a per-process mutation token. Other processes running as the same local user can still read that token. Do not treat it as a security boundary against malicious local software.
-- The current application is a developer prototype. It has no signed installer, UIA integration, broad accessibility audit, or verified clean install on a second machine.
+- **Native Windows not verified in this build environment.** Win32 input, UIA inspection and the W1 Notepad workflow have code and opt-in tests but were not run here (`WINDOWS_NATIVE_TESTS_NOT_RUN`). Notepad window matching is by title; packaged Notepad on Windows 11 may hand off to another PID. Foreground changes between two observations can escape detection.
+- **Browser actions are DOM-level** (Playwright), not physical cursor movement. A physical-cursor browser path is not implemented.
+- **Intent understanding is template-based.** New goals must contain "for <First Last>"; other phrasing is recorded but not executed. No LLM provider is wired; provider-dependent generalisation does not exist yet.
+- **Speech**: only the browser Web Speech API, which may use the vendor's cloud service; no offline STT/TTS; barge-in on audio is not automated. Typed transcripts exercise the same protocol.
+- **Fixtures are ours.** The exactly-once property relies on the outbox's unique operation IDs. Real external systems may not offer such keys.
+- **Benchmarks are small and constructed** (24 runs per policy, 4 per ablation cell); they show the mechanisms are needed for the targeted faults, not field reliability.
+- **Skills** compile one demonstrated CRM flow; preconditions are limited to `contact_exists`.
+- **Catalogue**: 11 of 80 concepts are TESTED through shared primitives; the rest are IDEA / SPECIFIED / BACKEND_IMPLEMENTED / PROVIDER_REQUIRED / BLOCKED.
+- **Security**: the loopback token is readable by other processes of the same user; agents are trusted in-process code (capability checks are application policy, not an OS sandbox).
+- **Packaging**: no installer; portable scripts only. A fresh second-machine Windows install has not been run in this session.

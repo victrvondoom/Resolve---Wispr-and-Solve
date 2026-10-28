@@ -80,6 +80,10 @@ def _api():
     user32.GetCursorPos.restype = wintypes.BOOL
     user32.SendInput.argtypes = [wintypes.UINT, ctypes.POINTER(_INPUT), ctypes.c_int]
     user32.SendInput.restype = wintypes.UINT
+    user32.ShowWindow.argtypes = [wintypes.HWND, ctypes.c_int]
+    user32.SetForegroundWindow.argtypes = [wintypes.HWND]
+    user32.SetForegroundWindow.restype = wintypes.BOOL
+    user32.PostMessageW.argtypes = [wintypes.HWND, wintypes.UINT, wintypes.WPARAM, wintypes.LPARAM]
     if hasattr(user32, "GetDpiForWindow"):
         user32.GetDpiForWindow.argtypes = [wintypes.HWND]
         user32.GetDpiForWindow.restype = wintypes.UINT
@@ -386,6 +390,42 @@ def press_key(hwnd: int, key: str, snapshot_id: str | None = None) -> dict:
         _guard(hwnd, snapshot_id)
         _send(_keyboard(vk=vk), _keyboard(vk=vk, flags=0x0002))
     return {"status": "DISPATCHED", "hwnd": hwnd, "key": key.upper()}
+
+
+MODIFIERS = {"CTRL": 0x11, "SHIFT": 0x10, "ALT": 0x12}
+
+
+def press_chord(hwnd: int, keys: list[str], snapshot_id: str | None = None) -> dict:
+    """Modifier chord such as ["CTRL", "S"]; only letters/digits plus allowlisted modifiers."""
+    if not keys or len(keys) > 3:
+        raise ValueError("chord needs 1-3 keys")
+    codes = []
+    for key in keys:
+        key = key.upper()
+        if key in MODIFIERS:
+            codes.append(MODIFIERS[key])
+        elif len(key) == 1 and key.isalnum():
+            codes.append(ord(key))
+        elif key in KEYS:
+            codes.append(KEYS[key])
+        else:
+            raise ValueError(f"unsupported chord key {key}")
+    with _desktop_turn():
+        _check_control()
+        _guard(hwnd, snapshot_id)
+        _send(*[_keyboard(vk=c) for c in codes], *[_keyboard(vk=c, flags=0x0002) for c in reversed(codes)])
+    return {"status": "DISPATCHED", "hwnd": hwnd, "chord": [k.upper() for k in keys]}
+
+
+def focus_window(hwnd: int) -> bool:
+    """Ask Windows to foreground a window. Windows may refuse (foreground lock); callers must re-check."""
+    user32 = _api()
+    user32.ShowWindow(hwnd, 9)  # SW_RESTORE
+    return bool(user32.SetForegroundWindow(hwnd))
+
+
+def close_window(hwnd: int) -> None:
+    _api().PostMessageW(hwnd, 0x0010, 0, 0)  # WM_CLOSE
 
 
 def scroll(hwnd: int, steps: int, snapshot_id: str | None = None) -> dict:

@@ -19,9 +19,23 @@ from resolve_core import Action, Ledger, digest, now, uid
 CHROMIUM = '/opt/pw-browsers/chromium'
 
 
+def browser_launch_options(headless: bool = True) -> dict:
+    """RESOLVE_BROWSER_CHANNEL=msedge|chrome uses an installed browser (typical on Windows, no download);
+    RESOLVE_CHROMIUM=<path> pins a binary; otherwise the preinstalled cloud Chromium or Playwright's default."""
+    import os
+    opts: dict = {'headless': headless}
+    if os.environ.get('RESOLVE_BROWSER_CHANNEL'):
+        opts['channel'] = os.environ['RESOLVE_BROWSER_CHANNEL']
+    elif os.environ.get('RESOLVE_CHROMIUM'):
+        opts['executable_path'] = os.environ['RESOLVE_CHROMIUM']
+    elif Path(CHROMIUM).exists():
+        opts['executable_path'] = CHROMIUM
+    return opts
+
+
 class MissionError(Exception):
     def __init__(self, code: str, message: str, **extra):
-        super().__init__(message)
+        super().__init__(f"{code}: {message}")
         self.code, self.extra = code, extra
 
 
@@ -72,15 +86,15 @@ class WebMissionRunner:
         # one fenced executor at a time across missions/processes sharing this ledger DB
         self.leases = CursorLeaseManager(ledger.path)
         self.hooks: dict = {}
+        # Benchmark-only ablation switches (benchmarks/ablations.py). Empty in normal operation; never set by the API.
+        # 'temporal_guard' | 'reconcile' | 'verifier' | 'digest'
+        self.ablate: set[str] = set()
 
     @contextmanager
     def browser(self):
         from playwright.sync_api import sync_playwright
         with sync_playwright() as p:
-            launch = {'headless': self.headless}
-            if Path(CHROMIUM).exists():
-                launch['executable_path'] = CHROMIUM
-            b = p.chromium.launch(**launch)
+            b = p.chromium.launch(**browser_launch_options(self.headless))
             try:
                 yield b
             finally:
@@ -149,25 +163,97 @@ class WebMissionRunner:
         self._save(mission)
         return mission
 
-    def correct(self, mission_id: str, contact_id: str) -> dict:
-        """Voice-style correction: bump the revision, supersede pending actions, kill their approvals."""
-        mission = self.get(mission_id)
-        for aid in mission['actions']:
+    PRE_DISPATCH = {'PROPOSED', 'BOUND', 'NEEDS_APPROVAL', 'AUTHORIZED', 'READY'}
+    IN_FLIGHT = {'DISPATCHING', 'DISPATCHED', 'OBSERVING', 'UNCERTAIN'}
+
+    def _supersede_pending(self, mission: dict, reason: str) -> dict:
+        superseded, in_flight = [], []
+        for aid in mission.get('actions', []):
             a = self.ledger.action(aid)
-            if a and a['status'] in {'PROPOSED', 'BOUND', 'NEEDS_APPROVAL', 'AUTHORIZED', 'READY'}:
-                self.ledger.transition(aid, 'SUPERSEDED', {'superseded_by_revision': mission['intent_revision'] + 1})
+            if not a:
+                continue
+            if a['status'] in self.PRE_DISPATCH and not ('digest' in self.ablate and a['status'] == 'AUTHORIZED'):
+                self.ledger.transition(aid, 'SUPERSEDED', {'reason': reason, 'superseded_at_revision': mission['intent_revision']})
+                superseded.append(aid)
+            elif a['status'] in self.IN_FLIGHT:
+                in_flight.append({'action_id': aid, 'status': a['status']})
+        mission.pop('presented', None)  # a spoken/visual approval summary never outlives its revision
+        return {'superseded': superseded, 'in_flight': in_flight}
+
+    def correct(self, mission_id: str, contact_id: str | None) -> dict:
+        """Correction: bump the revision, supersede pre-dispatch actions and their approvals.
+        In-flight actions cannot be recalled; they are reported, never silently treated as cancelled."""
+        mission = self.get(mission_id)
+        report = self._supersede_pending(mission, 'intent corrected')
         mission['intent_revision'] += 1
         mission['binding'] = None
         mission['actions'] = []
         mission['status'] = 'NEEDS_CLARIFICATION'
+        mission['last_correction'] = report
         self._save(mission)
+        if contact_id is None:
+            return mission
         return self.bind(mission_id, contact_id, mission['intent_revision'])
+
+    def cancel(self, mission_id: str) -> dict:
+        mission = self.get(mission_id)
+        report = self._supersede_pending(mission, 'mission cancelled by user')
+        mission['intent_revision'] += 1
+        mission['status'] = 'CANCELLED'
+        mission['last_cancel'] = report
+        self._save(mission)
+        return mission
+
+    def utter(self, mission_id: str | None, text: str) -> dict:
+        """Apply one finalised utterance (typed or transcribed). Partial speech must never reach here."""
+        from intent import classify
+        mission = self.get(mission_id) if mission_id else None
+        c = classify(text, mission)
+        out: dict = {'classification': c.as_dict()}
+        if c.kind == 'NEW_GOAL':
+            out['mission'] = self.start(text)
+            return out
+        entry = {'revision_before': mission['intent_revision'], 'text': text, 'kind': c.kind, 'at': now()}
+        if c.kind == 'CANCEL':
+            mission = self.cancel(mission_id)
+        elif c.kind == 'CORRECTION':
+            target = c.matched_candidates[0] if len(c.matched_candidates) == 1 else None
+            mission = self.correct(mission_id, target)
+            if target is None:
+                mission['ambiguity_reason'] = 'correction did not identify exactly one candidate; please choose explicitly'
+        elif c.kind == 'REFINEMENT' and mission['status'] == 'NEEDS_CLARIFICATION' and len(c.matched_candidates) == 1:
+            mission = self.bind(mission_id, c.matched_candidates[0], mission['intent_revision'])
+        elif c.kind == 'APPROVE':
+            presented = mission.get('presented')
+            if not presented:
+                raise MissionError('NOTHING_PRESENTED', 'no approval summary has been presented at this revision')
+            out['approval'] = self.approve(presented['action_id'], presented['digest'])
+            out['approved_summary'] = presented['summary']
+        elif c.kind == 'QUESTION':
+            out['answer'] = self.describe(mission)
+        mission = self.get(mission_id)
+        entry['revision_after'] = mission['intent_revision']
+        mission.setdefault('utterances', []).append(entry)
+        self._save(mission)
+        out['mission'] = mission
+        return out
+
+    def describe(self, mission: dict) -> str:
+        if mission['status'] == 'NEEDS_CLARIFICATION':
+            return mission.get('ambiguity_reason') or 'I need you to pick the intended contact.'
+        states = [f"{a['operation']}={a['status']}" for a in (self.ledger.action(x) for x in mission.get('actions', [])) if a]
+        return f"Mission {mission['status']} at revision {mission['intent_revision']}; " + (', '.join(states) or 'no actions planned yet')
 
     def plan(self, mission_id: str) -> dict:
         mission = self.get(mission_id)
         if not mission['binding']:
             raise MissionError('NEEDS_CLARIFICATION', mission.get('ambiguity_reason', 'no unique entity binding'))
+        if mission['status'] == 'CANCELLED':
+            raise MissionError('CANCELLED', 'mission was cancelled')
         cid, rev = mission['binding']['contact_id'], mission['intent_revision']
+        done_task = next((a for a in (self.ledger.action(x) for x in mission.get('actions', []))
+                          if a and a['operation'] == 'crm_create_task' and a['status'] == 'CONFIRMED' and a['target_entity_id'] == cid), None)
+        self._supersede_pending(mission, 're-planned')  # an older plan's approval can never authorize the new one
         with self.browser() as b:
             world = self.observe(b)
         reports = [r for r in world['reports'] if r['contact_id'] == cid]
@@ -180,15 +266,20 @@ class WebMissionRunner:
                      'body': f"Hi {mission['person'].split()[0]}, attached is the latest report ({latest['title']} {latest['version']}).", 'op_id': uid('op')}
         send = Action(uid('act'), mission_id, rev, 'outbox_send', cid, 'BrowserExecutor', 'outbox', None, send_args, None,
                       {'message_to': send_args['to_addr'], 'sha256': latest['sha256']}, 'NON_IDEMPOTENT', 'consequential')
-        for a in (task, send):
+        fresh = (send,) if done_task else (task, send)  # never repeat a confirmed CRM write on re-plan
+        for a in fresh:
             self.ledger.create_action(a)
             self.ledger.transition(a.action_id, 'BOUND', {'binding': mission['binding']})
+        task_id = done_task['action_id'] if done_task else task.action_id
         self.ledger.transition(send.action_id, 'NEEDS_APPROVAL', {})
         digest_ = self.action_digest(self.ledger.action(send.action_id))
-        mission['actions'] = [task.action_id, send.action_id]
+        mission['actions'] = [task_id, send.action_id]
         mission['report'] = latest
+        mission['presented'] = {'action_id': send.action_id, 'digest': digest_,
+                                'summary': f"Send {latest['title']} {latest['version']} (sha256 {latest['sha256'][:12]}) to {send_args['to_addr']} — SIMULATED DELIVERY"}
         self._save(mission)
-        return {'mission': mission, 'task_action': task.action_id, 'send_action': send.action_id, 'approval_digest': digest_}
+        return {'mission': mission, 'task_action': task_id, 'send_action': send.action_id, 'approval_digest': digest_,
+                'approval_summary': mission['presented']['summary']}
 
     @staticmethod
     def action_digest(action: dict) -> str:
@@ -201,6 +292,8 @@ class WebMissionRunner:
         if not a or a['status'] != 'NEEDS_APPROVAL':
             raise MissionError('NOT_AWAITING_APPROVAL', f"action is {a['status'] if a else 'missing'}")
         mission = self.get(a['mission_id'])
+        if 'digest' in self.ablate:
+            return self.ledger.transition(action_id, 'AUTHORIZED', {'approval_digest': self.action_digest(a)})
         if a['intent_revision'] != mission['intent_revision']:
             raise MissionError('STALE_REVISION', 'approval refers to a superseded intent revision')
         if presented_digest != self.action_digest(a):
@@ -242,6 +335,9 @@ class WebMissionRunner:
         args = a['arguments']
         # temporal guard: the attachment the human approved must still be the attachment on disk
         live = self.verifier.report_sha(args['attachment_id'])
+        if 'temporal_guard' in self.ablate:  # ablation: send whatever is on disk now
+            args = {**args, 'attachment_sha256': live}
+            a = {**a, 'arguments': args, 'approval_digest': self.action_digest({**a, 'arguments': args})}
         if live != args['attachment_sha256']:
             self.ledger.transition(action_id, 'SUPERSEDED', {'reason': 'attachment changed after approval', 'approved_sha256': args['attachment_sha256'], 'live_sha256': live})
             raise MissionError('ATTACHMENT_CHANGED', 'report changed after review; re-plan and re-approve', approved=args['attachment_sha256'], live=live)
@@ -283,11 +379,27 @@ class WebMissionRunner:
                 ack = page.locator('#toast').inner_text()
         except Exception as e:  # no acknowledgement observed: the effect is UNKNOWN, not failed
             ack = f'no acknowledgement ({type(e).__name__})'
+        if not ack.startswith('Sent:') and 'reconcile' in self.ablate:  # ablation: stateless retry on silence
+            retry = {**a, 'arguments': {**args, 'op_id': uid('op')}}
+            self.ledger.transition(action_id, 'FAILED', {'ack': ack, 'note': 'ABLATION: treated silence as failure'})
+            return self._ablation_resend(retry)
         if not ack.startswith('Sent:'):
             self.ledger.transition(action_id, 'UNCERTAIN', {'ack': ack, 'note': 'sent but cannot confirm acceptance; will not resend automatically'})
             return self.reconcile(action_id)
         self.ledger.transition(action_id, 'DISPATCHED', {'ack': ack})
         return self._verify(action_id, lambda: self.verifier.message(args['op_id'], args['to_addr'], args['attachment_sha256']))
+
+    def _ablation_resend(self, a: dict) -> dict:
+        args = a['arguments']
+        with self.browser() as b:
+            page = b.new_page()
+            page.goto(self.urls['outbox'])
+            for label, key in (('To', 'to_addr'), ('Attachment ID', 'attachment_id'), ('Attachment SHA-256', 'attachment_sha256'), ('Body', 'body')):
+                page.get_by_label(label).fill(args[key])
+            page.evaluate("op => document.querySelector('#f [name=op_id]').value = op", args['op_id'])
+            page.get_by_role('button', name='Send (simulated)').click()
+            page.locator('#toast:not(:empty)').wait_for(timeout=5000)
+        return {**self.ledger.action(a['action_id']), 'status': 'CONFIRMED', 'note': 'ABLATION: claimed after blind resend'}
 
     def reconcile(self, action_id: str) -> dict:
         """Read-only. Never re-dispatches."""
@@ -308,11 +420,17 @@ class WebMissionRunner:
 
     def _verify(self, action_id: str, check) -> dict:
         self.ledger.transition(action_id, 'OBSERVING', {})
+        if 'verifier' in self.ablate:  # ablation: believe the UI
+            toast = self.ledger.action(action_id).get('ui_toast') or self.ledger.action(action_id).get('ack') or ''
+            ok = toast.startswith(('Task created', 'Sent:'))
+            return self.ledger.transition(action_id, 'CONFIRMED' if ok else 'FAILED', {'verification': {'status': 'UI_CLAIM', 'evidence': toast}})
         result = check()
         state = result['status'] if result['status'] in {'CONFIRMED', 'FAILED', 'WRONG_TARGET', 'UNCERTAIN'} else 'UNCERTAIN'
         return self.ledger.transition(action_id, state, {'verification': result, 'verification_status': state, 'evidence_references': [str(result['evidence'])]})
 
     def _guard_revision(self, action: dict) -> None:
         mission = self.get(action['mission_id'])
+        if 'digest' in self.ablate and action['status'] != 'SUPERSEDED':
+            return
         if mission['intent_revision'] != action['intent_revision'] or action['status'] == 'SUPERSEDED':
             raise MissionError('SUPERSEDED', 'action belongs to a superseded intent revision')

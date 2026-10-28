@@ -93,13 +93,29 @@ class Handler(BaseHTTPRequestHandler):
             path = parsed.path
             if path == '/api/stream':
                 q = parse_qs(parsed.query)
-                after = int(q.get('after', [self.headers.get('Last-Event-ID', '0')])[0] or 0)
+                after = q.get('after', [self.headers.get('Last-Event-ID', '0')])[0] or '0'
+                require(bool(re.fullmatch(r'\d+(\.\d+)?', after)), 400, 'bad stream cursor')
                 return web_api.stream(self, after, min(float(q.get('max_s', ['300'])[0]), 3600))
             if path.startswith('/api/web/'):
                 status, body = web_api.call('GET', path, {})
                 return self.send_json(status, body)
-            if path == '/':
-                raw = (ROOT / 'web' / 'index.html').read_bytes()
+            pages = {'/': 'landing.html', '/app': 'index.html', '/app/': 'index.html'}
+            static = re.fullmatch(r'/static/([A-Za-z0-9_.-]+\.(js|css|svg))', path)
+            if static:
+                asset = ROOT / 'web' / 'static' / static.group(1)
+                require(asset.is_file(), 404, 'asset not found')
+                raw = asset.read_bytes()
+                kind = {'js': 'text/javascript', 'css': 'text/css', 'svg': 'image/svg+xml'}[static.group(2)]
+                self.send_response(200)
+                self.send_header('Content-Type', kind + '; charset=utf-8')
+                self.send_header('Cache-Control', 'no-store')
+                self.send_header('Content-Length', str(len(raw)))
+                self.end_headers()
+                self.wfile.write(raw)
+                return
+            if path in pages:
+                page = ROOT / 'web' / pages[path]
+                raw = (page if page.exists() else ROOT / 'web' / 'index.html').read_bytes()
                 self.send_response(200)
                 self.send_header('Content-Type', 'text/html; charset=utf-8')
                 self.send_header('Cache-Control', 'no-store')

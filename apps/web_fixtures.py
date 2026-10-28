@@ -41,6 +41,11 @@ def truth(db: sqlite3.Connection, kind: str, detail: dict) -> None:
     db.execute('INSERT INTO ground_truth(at,kind,detail) VALUES(?,?,?)', (now(), kind, json.dumps(detail, sort_keys=True)))
 
 
+class _QuietServer(ThreadingHTTPServer):
+    def handle_error(self, request, client_address):
+        pass  # the drop_ack fault closes sockets on purpose; broken pipes are expected, not errors
+
+
 class App:
     """Base: a ThreadingHTTPServer on an ephemeral loopback port."""
     name = 'app'
@@ -88,7 +93,7 @@ class App:
                 except Exception as e:
                     self._send(500, {'error': str(e)})
 
-        self.server = ThreadingHTTPServer(('127.0.0.1', 0), H)
+        self.server = _QuietServer(('127.0.0.1', 0), H)
         self.server.daemon_threads = True
         self.port = self.server.server_address[1]
         self.url = f'http://127.0.0.1:{self.port}'
@@ -140,13 +145,26 @@ class CrmApp(App):
                 return h._send(200, [dict(r) for r in db.execute('SELECT * FROM tasks ORDER BY created_at')])
         if path == '/':
             popup = '<div class="modal" role="dialog" aria-label="Survey"><div><p>Quick survey?</p><button id="dismiss">Dismiss</button></div></div>' if self.faults.get('popup') else ''
-            body = popup + """<label>Search contacts <input id="q" aria-label="Search contacts"></label>
-<table aria-label="Contacts"><thead><tr><th>ID</th><th>Name</th><th>Email</th><th>Org</th><th>Dept</th></tr></thead><tbody id="rows"><tr><td colspan="5">Loading…</td></tr></tbody></table>
-<h2>Create follow-up task</h2>
+            form = """<h2>Create follow-up task</h2>
 <form id="f"><label>Contact ID <input name="contact_id" aria-label="Contact ID" required></label>
 <label>Task title <input name="title" aria-label="Task title" required></label><input type="hidden" name="op_id">
 <button type="submit">Create task</button></form><div id="toast" role="status"></div>
-<h2>Tasks</h2><table aria-label="Tasks"><tbody id="tasks"></tbody></table>
+"""
+            table = """<label>Search contacts <input id="q" aria-label="Search contacts"></label>
+<table aria-label="Contacts"><thead><tr><th>ID</th><th>Name</th><th>Email</th><th>Org</th><th>Dept</th></tr></thead><tbody id="rows"><tr><td colspan="5">Loading…</td></tr></tbody></table>
+"""
+            if self.faults.get('layout_shift'):
+                # simulated app update: the form moves above the table into a disclosure widget, the
+                # title label and submit text are renamed; input `name` attributes stay the same
+                form = """<details open class="quick-actions"><summary>Quick actions</summary><section aria-label="Follow-ups">
+<form id="f"><div><label>Contact ID <input name="contact_id" aria-label="Contact ID" required></label></div>
+<div><label>Follow-up title <input name="title" aria-label="Follow-up title" required></label></div><input type="hidden" name="op_id">
+<div><button type="submit">Save follow-up</button></div></form><div id="toast" role="status"></div></section></details>
+"""
+                main = form + table
+            else:
+                main = table + form
+            body = popup + main + """<h2>Tasks</h2><table aria-label="Tasks"><tbody id="tasks"></tbody></table>
 <script>
 const dm=document.getElementById('dismiss'); if(dm) dm.onclick=()=>document.querySelector('.modal').remove();
 async function load(){const c=await (await fetch('/api/contacts')).json(); rows.innerHTML=c.map(x=>`<tr data-testid="contact-row" data-contact-id="${x.id}"><td>${x.id}</td><td>${x.name}</td><td>${x.email}</td><td>${x.org}</td><td>${x.dept}</td></tr>`).join('');
@@ -173,7 +191,8 @@ f.onsubmit=async e=>{e.preventDefault(); const d=Object.fromEntries(new FormData
                 return h._send(200, {'id': tid})
             db.execute('INSERT INTO tasks VALUES(?,?,?,?,?)', (tid, body['contact_id'], body.get('title', ''), op, now()))
             truth(db, 'task_created', {'task': tid, 'contact': body['contact_id'], 'op_id': op})
-            h._send(200, {'id': tid})
+            db.commit()  # acknowledge only after the write is durable (replying inside the txn raced readers)
+        h._send(200, {'id': tid})
 
 
 class DocsApp(App):
@@ -216,6 +235,7 @@ class DocsApp(App):
                 Path(r['path']).write_bytes(data)
                 db.execute('UPDATE reports SET sha256=?, modified_at=? WHERE id=?', (sha256(data), now(), r['id']))
                 truth(db, 'report_edited', {'id': r['id'], 'sha256': sha256(data)})
+                db.commit()
             return h._send(200, {'ok': True})
         h._send(404, {'error': 'not found'})
 
@@ -263,6 +283,8 @@ class OutboxApp(App):
             mid = 'M-' + uuid.uuid4().hex[:8]
             db.execute('INSERT INTO messages VALUES(?,?,?,?,?,?,?)', (mid, op, body.get('to_addr'), body.get('attachment_id'), body.get('attachment_sha256'), body.get('body'), now()))
             truth(db, 'message_committed', {'id': mid, 'to': body.get('to_addr'), 'attachment_sha256': body.get('attachment_sha256'), 'op_id': op})
+        if self.faults.get('hang_after_commit_ms'):  # committed; the process may die before replying
+            time.sleep(int(self.faults['hang_after_commit_ms']) / 1000)
         if self.faults.pop('drop_ack', None):  # committed, but the response never arrives
             h.connection.close()
             h.close_connection = True

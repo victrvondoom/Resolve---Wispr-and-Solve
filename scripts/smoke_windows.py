@@ -12,4 +12,4 @@ if not ctypes.windll.user32.GetForegroundWindow():
     sys.exit(3)
 env = dict(os.environ, RESOLVE_GUI_TEST='1')
 root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-sys.exit(subprocess.call([sys.executable, '-m', 'unittest', 'tests.test_windows_adapter', 'tests.test_api_gui', 'tests.test_uia_adapter', '-v'], cwd=root, env=env))
+sys.exit(subprocess.call([sys.executable, '-m', 'unittest', 'tests.test_windows_adapter', 'tests.test_api_gui', 'tests.test_uia_adapter', 'tests.test_w1_notepad', '-v'], cwd=root, env=env))

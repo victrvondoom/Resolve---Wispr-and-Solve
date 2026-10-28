@@ -1,0 +1,1036 @@
+# RESOLVE G7 capability catalogue: 44 Computer Use + 36 Agentic GTM concepts.
+# Statuses are deliberately conservative. TESTED = an existing test in tests/ exercises the core
+# of the concept through shared primitives. Nothing is VERIFIED (needs Windows/human evidence).
+# original_idea is the one-line summary from the project brief, not from the original hackathon submissions.
+# No hackathon source code is reused (source_license_if_reused: null).
+version: 1
+concepts:
+- id: cu_plva
+  source_hackathon: computer_use
+  name: PLVA
+  original_idea: Local screenshot redaction, tokenized secret handling, permission shield. (summary from the project brief)
+  resolve_capability: 'Policy-checked agent actions: every consequential step passes the permission engine and approval digest before dispatch.'
+  workspace: Trust and Safety
+  adapter: web_mission
+  dependencies:
+  - ledger
+  - web_mission
+  status: SPECIFIED
+  acceptance_test: Write a test that a PLVA-style policy rule (deny send to non-allowlisted domain) refuses dispatch and leaves outbox ground_truth empty.
+  evidence: None yet.
+  source_license_if_reused: null
+- id: cu_handyman
+  source_hackathon: computer_use
+  name: Handyman
+  original_idea: Live visual UI guidance, narration, actual element pointing tied to current screen. (summary from the project brief)
+  resolve_capability: Guided repair/how-to walkthroughs over desktop apps.
+  workspace: Creative and Educational
+  adapter: windows_adapter
+  dependencies:
+  - windows_adapter
+  status: IDEA
+  acceptance_test: Define a walkthrough mission over a local fixture app and verify each step effect from app state.
+  evidence: None yet.
+  source_license_if_reused: null
+- id: cu_reel_learn
+  source_hackathon: computer_use
+  name: Reel-Learn
+  original_idea: Instructional-video frame analysis and checkpoint-guided workflow imitation. (summary from the project brief)
+  resolve_capability: Learn a reusable skill from a recorded demonstration (semantic constraints, not clicks).
+  workspace: Skill Learning
+  adapter: web_skills
+  dependencies:
+  - web_skills
+  - ledger
+  status: SPECIFIED
+  acceptance_test: Record a confirmed web action, compile it to a skill, replay it on a new entity and verify the effect via the fixture oracle.
+  evidence: Skill compile/approve/replay primitive exists (tests/test_skill_runtime.py) but learning from a video/recording is not implemented.
+  source_license_if_reused: null
+- id: cu_kylian
+  source_hackathon: computer_use
+  name: Kylian
+  original_idea: Authenticated remote voice/message-triggered computer tasks. (summary from the project brief)
+  resolve_capability: Personal assistant missions routed to the Life Admin workspace.
+  workspace: Real-World and Life Admin
+  adapter: file_worker
+  dependencies:
+  - file_worker
+  status: IDEA
+  acceptance_test: Define the concrete Kylian task and map it to a sandboxed file or web fixture mission with an oracle.
+  evidence: None yet.
+  source_license_if_reused: null
+- id: cu_patchwork
+  source_hackathon: computer_use
+  name: Patchwork
+  original_idea: Accessible adaptive webpage layout and user-specific UI templates. (summary from the project brief)
+  resolve_capability: Compose multiple app outputs into one artefact.
+  workspace: Creative and Educational
+  adapter: file_worker
+  dependencies:
+  - file_worker
+  status: IDEA
+  acceptance_test: Combine two sandbox files into an export and verify the output hash/contents independently.
+  evidence: None yet.
+  source_license_if_reused: null
+- id: cu_snowglobe
+  source_hackathon: computer_use
+  name: Snowglobe
+  original_idea: Authorized camera-event-to-approved-workflow alerts. (summary from the project brief)
+  resolve_capability: Life-admin snapshot of personal state.
+  workspace: Real-World and Life Admin
+  adapter: file_worker
+  dependencies:
+  - file_worker
+  status: IDEA
+  acceptance_test: Produce an inventory snapshot of the sandbox and verify it against an independent os.walk oracle.
+  evidence: None yet.
+  source_license_if_reused: null
+- id: cu_otto
+  source_hackathon: computer_use
+  name: Otto
+  original_idea: Constrained legacy engineering application control and parameter batch runs. (summary from the project brief)
+  resolve_capability: Drive engineering/scientific desktop software.
+  workspace: Science and Engineering
+  adapter: windows_adapter
+  dependencies:
+  - windows_adapter
+  status: PROVIDER_REQUIRED
+  acceptance_test: Requires the target scientific application; write an adapter test against it on Windows.
+  evidence: No scientific application or adapter available on this host.
+  source_license_if_reused: null
+- id: cu_occasion
+  source_hackathon: computer_use
+  name: Occasion
+  original_idea: Venue research, comparison, budget tracking, approved bookings and logistics. (summary from the project brief)
+  resolve_capability: Event/occasion planning across calendar and messaging.
+  workspace: Real-World and Life Admin
+  adapter: web_mission
+  dependencies:
+  - web_mission
+  status: IDEA
+  acceptance_test: Calendar fixture app + approval-gated invite; verify invite in fixture ground_truth.
+  evidence: No calendar fixture exists.
+  source_license_if_reused: null
+- id: cu_ivy
+  source_hackathon: computer_use
+  name: Ivy
+  original_idea: Opt-in consent-scoped personal context/memory graph with deletion controls. (summary from the project brief)
+  resolve_capability: 'Multi-agent workforce: specialist agents coordinated by a scheduler with dependency ordering.'
+  workspace: Multi-Agent Workforce
+  adapter: agent_runtime
+  dependencies:
+  - ledger
+  - executor_lease
+  status: SPECIFIED
+  acceptance_test: Extend tests/test_agent_runtime.py with an Ivy-style multi-role mission whose effects are verified by an oracle.
+  evidence: Scheduler primitives exist (tests/test_agent_runtime.py) but no Ivy-specific workflow.
+  source_license_if_reused: null
+- id: cu_halo
+  source_hackathon: computer_use
+  name: Halo
+  original_idea: Browser natural-language page operation and safe layout adaptation. (summary from the project brief)
+  resolve_capability: Native computer control (cursor/keyboard) of Windows desktop apps.
+  workspace: Computer Control
+  adapter: windows_adapter
+  dependencies:
+  - windows_adapter
+  - executor_lease
+  status: BLOCKED
+  acceptance_test: Run scripts/smoke-windows.ps1 in an interactive Windows session and verify UIA-observed effects.
+  evidence: 'WINDOWS_NATIVE_TESTS_NOT_RUN: needs native Windows UIA/Win32 input in an interactive session; Linux host cannot verify.'
+  source_license_if_reused: null
+- id: cu_glassbox
+  source_hackathon: computer_use
+  name: Glassbox
+  original_idea: Transparent investigations with source citations and human decisions. (summary from the project brief)
+  resolve_capability: 'Transparent agent: UI claims are never trusted; an independent verifier reads ground truth.'
+  workspace: Trust and Safety
+  adapter: web_mission
+  dependencies:
+  - web_mission
+  - ledger
+  status: TESTED
+  acceptance_test: tests/test_web_g3.py::WebMissionTests::test_misleading_toast_is_caught_by_independent_verifier
+  evidence: Fixture shows a misleading "Task created" toast while the DB has nothing; mission is marked FAILED (Playwright DOM-level, not physical cursor).
+  source_license_if_reused: null
+- id: cu_buywith402
+  source_hackathon: computer_use
+  name: BuyWith402
+  original_idea: Browser-mediated checkout preparation, approval-bound final orders. (summary from the project brief)
+  resolve_capability: Agent-initiated purchases (HTTP 402 payments).
+  workspace: Commerce
+  adapter: none
+  dependencies: []
+  status: BLOCKED
+  acceptance_test: 'Only after a sandboxed payment rail exists: approval-digest-bound purchase against a fake merchant fixture.'
+  evidence: 'POLICY_BLOCKED: AGENTS.md forbids purchases / real-money transactions; no sandboxed payment rail exists in this repo.'
+  source_license_if_reused: null
+- id: cu_followthrough
+  source_hackathon: computer_use
+  name: FollowThrough
+  original_idea: Conversation to attributable follow-up tasks, consent-first audio and reminders. (summary from the project brief)
+  resolve_capability: Create the CRM follow-up task for the right contact and send the approved report.
+  workspace: Multi-Agent Workforce
+  adapter: web_mission
+  dependencies:
+  - web_mission
+  - ledger
+  status: TESTED
+  acceptance_test: tests/test_web_g3.py::WebMissionTests::test_W2_W10_full_mission_confirms_exactly_one_correct_effect
+  evidence: Exactly one CRM task for C-104 and one SIMULATED DELIVERY outbox message, checked by an oracle on the fixture DB (Playwright DOM-level).
+  source_license_if_reused: null
+- id: cu_molecular_proteome_visualizer
+  source_hackathon: computer_use
+  name: Molecular/Proteome Visualizer
+  original_idea: Scientific 3D manipulation with validated parameter changes. (summary from the project brief)
+  resolve_capability: Drive molecular visualisation software.
+  workspace: Science and Engineering
+  adapter: windows_adapter
+  dependencies:
+  - windows_adapter
+  status: PROVIDER_REQUIRED
+  acceptance_test: Requires a molecular viewer application and adapter.
+  evidence: No scientific application available on this host.
+  source_license_if_reused: null
+  registry_name: CUA Molecular/Proteome Visualizer
+- id: cu_life_admin_operator
+  source_hackathon: computer_use
+  name: Life-Admin Operator
+  original_idea: Eyes-free accessible web tasks, spoken irreversible-action approval. (summary from the project brief)
+  resolve_capability: 'Sandboxed personal file workflow: inventory, content-hash dedupe plan, guarded apply, verified undo.'
+  workspace: Trust and Safety
+  adapter: web_mission + intent (typed transcript)
+  dependencies:
+  - file_worker
+  status: TESTED
+  acceptance_test: tests/test_w7_voice_correction.py::VoiceCorrectionE2E::test_correction_after_spoken_approval_kills_old_recipient
+  evidence: Spoken-style approval binds to the presented digest; correction invalidates it. Microphone path is browser-dependent and not automated.
+  source_license_if_reused: null
+- id: cu_cloud_cua
+  source_hackathon: computer_use
+  name: cloud_CUA
+  original_idea: Repo analysis, cloud-console deployment plan, scoped execution and verification. (summary from the project brief)
+  resolve_capability: Remote/cloud desktop computer-use agent.
+  workspace: Development Operations
+  adapter: windows_adapter
+  dependencies:
+  - windows_adapter
+  status: BLOCKED
+  acceptance_test: Run the Windows smoke suite against a remote interactive Windows desktop.
+  evidence: 'WINDOWS_NATIVE_TESTS_NOT_RUN: needs native Windows UIA/Win32 input in an interactive session; Linux host cannot verify.'
+  source_license_if_reused: null
+- id: cu_nativas_ai
+  source_hackathon: computer_use
+  name: Nativas AI
+  original_idea: Localized UI journeys, translation overflow audit and replayed remediation tests. (summary from the project brief)
+  resolve_capability: Native application automation.
+  workspace: Development Operations
+  adapter: windows_adapter
+  dependencies:
+  - windows_adapter
+  status: BLOCKED
+  acceptance_test: UIA adapter test against a native Windows fixture app.
+  evidence: 'WINDOWS_NATIVE_TESTS_NOT_RUN: needs native Windows UIA/Win32 input in an interactive session; Linux host cannot verify.'
+  source_license_if_reused: null
+- id: cu_improveme
+  source_hackathon: computer_use
+  name: ImproveMe
+  original_idea: Detect repeated authorized workflows and offer skill automation. (summary from the project brief)
+  resolve_capability: Skill-learning feedback on user workflows.
+  workspace: Skill Learning
+  adapter: web_skills
+  dependencies:
+  - web_skills
+  status: IDEA
+  acceptance_test: Define measurable improvement metric over replayed skills.
+  evidence: None yet.
+  source_license_if_reused: null
+- id: cu_homeagent
+  source_hackathon: computer_use
+  name: HomeAgent
+  original_idea: Structured housing discovery, shortlist and negotiation drafts. (summary from the project brief)
+  resolve_capability: Home / smart-home and household commerce tasks.
+  workspace: Commerce
+  adapter: none
+  dependencies: []
+  status: PROVIDER_REQUIRED
+  acceptance_test: Requires device or vendor provider; fixture-only simulation to be designed.
+  evidence: No provider integration in this repo; nothing implemented.
+  source_license_if_reused: null
+- id: cu_holodev
+  source_hackathon: computer_use
+  name: Holodev
+  original_idea: Voice-guided game/editor interactions for compatible environments. (summary from the project brief)
+  resolve_capability: Developer workflow automation in creative tools.
+  workspace: Creative and Educational
+  adapter: web_mission
+  dependencies:
+  - web_mission
+  status: IDEA
+  acceptance_test: Define a dev-tool fixture and verify a code/file effect independently.
+  evidence: None yet.
+  source_license_if_reused: null
+- id: cu_voodoo
+  source_hackathon: computer_use
+  name: Voodoo
+  original_idea: Walkthrough capture and generated narrated tutorial artifacts. (summary from the project brief)
+  resolve_capability: Creative desktop app control.
+  workspace: Creative and Educational
+  adapter: windows_adapter
+  dependencies:
+  - windows_adapter
+  status: BLOCKED
+  acceptance_test: UIA adapter test against a creative desktop app.
+  evidence: 'WINDOWS_NATIVE_TESTS_NOT_RUN: needs native Windows UIA/Win32 input in an interactive session; Linux host cannot verify.'
+  source_license_if_reused: null
+- id: cu_talksy
+  source_hackathon: computer_use
+  name: Talksy
+  original_idea: Authorized multimodal scam indicator and verifiable research. (summary from the project brief)
+  resolve_capability: Conversational voice front-end.
+  workspace: Trust and Safety
+  adapter: none
+  dependencies: []
+  status: PROVIDER_REQUIRED
+  acceptance_test: Requires a speech provider; no Wispr SDK is integrated (no claim made).
+  evidence: No speech provider or Wispr SDK integrated.
+  source_license_if_reused: null
+- id: cu_workfleet
+  source_hackathon: computer_use
+  name: Workfleet
+  original_idea: Multiple independent sandbox/browser workers with foreground desktop lock. (summary from the project brief)
+  resolve_capability: Fleet of concurrent missions serialised on an exclusive executor lease with fencing.
+  workspace: Multi-Agent Workforce
+  adapter: executor_lease
+  dependencies:
+  - executor_lease
+  - web_mission
+  - ledger
+  status: TESTED
+  acceptance_test: tests/test_web_g3.py::ConcurrencyTests::test_G5_two_concurrent_missions_serialize_on_executor_lease
+  evidence: Two concurrent missions confirm with non-overlapping DISPATCHING..CONFIRMED windows read from the persisted ledger.
+  source_license_if_reused: null
+- id: cu_voyager
+  source_hackathon: computer_use
+  name: Voyager
+  original_idea: Relevance-ranked event discovery based on opted-in context. (summary from the project brief)
+  resolve_capability: Travel search and booking.
+  workspace: Commerce
+  adapter: none
+  dependencies: []
+  status: PROVIDER_REQUIRED
+  acceptance_test: Requires travel provider; bookings are purchases and would also need a payment sandbox.
+  evidence: No provider integration in this repo; nothing implemented.
+  source_license_if_reused: null
+- id: cu_hiking_route_agent
+  source_hackathon: computer_use
+  name: Hiking Route Agent
+  original_idea: Route research, waypoint validation and browser map interaction. (summary from the project brief)
+  resolve_capability: Route planning with maps.
+  workspace: Real-World and Life Admin
+  adapter: none
+  dependencies: []
+  status: PROVIDER_REQUIRED
+  acceptance_test: Requires a maps/route provider.
+  evidence: No provider integration in this repo; nothing implemented.
+  source_license_if_reused: null
+- id: cu_screenloom
+  source_hackathon: computer_use
+  name: Screenloom
+  original_idea: Local screen clip metadata, action timeline, searchable evidence library. (summary from the project brief)
+  resolve_capability: Turn screen sessions into reusable, versioned skills.
+  workspace: Skill Learning
+  adapter: web_skills
+  dependencies:
+  - web_skills
+  - ledger
+  status: SPECIFIED
+  acceptance_test: Record a Playwright mission, compile to a skill, approve by digest, replay on a fixture and verify via oracle.
+  evidence: Skill store exists (tests/test_skill_runtime.py); screen-recording capture is not implemented.
+  source_license_if_reused: null
+- id: cu_holomobile
+  source_hackathon: computer_use
+  name: HoloMobile
+  original_idea: Mobile automation through attached emulator/device tools. (summary from the project brief)
+  resolve_capability: Mobile device control.
+  workspace: Computer Control
+  adapter: none
+  dependencies: []
+  status: BLOCKED
+  acceptance_test: Requires a mobile device/emulator adapter.
+  evidence: No mobile device or emulator adapter on this host.
+  source_license_if_reused: null
+- id: cu_autopilot_ai
+  source_hackathon: computer_use
+  name: AutoPilot-AI
+  original_idea: Repair estimate drafting, parts comparison, human-approved purchasing. (summary from the project brief)
+  resolve_capability: Autonomous shopping / checkout.
+  workspace: Commerce
+  adapter: none
+  dependencies: []
+  status: BLOCKED
+  acceptance_test: 'Only with a payment sandbox: approval-bound checkout on a fake store fixture.'
+  evidence: 'POLICY_BLOCKED: AGENTS.md forbids purchases / real-money transactions; no sandboxed payment rail exists in this repo.'
+  source_license_if_reused: null
+- id: cu_holo_forge
+  source_hackathon: computer_use
+  name: Holo Forge
+  original_idea: Narrated human demonstration compiled to versioned skills with remote approval. (summary from the project brief)
+  resolve_capability: Forge reusable skills from confirmed actions; activation needs digest approval.
+  workspace: Skill Learning
+  adapter: web_skills
+  dependencies:
+  - web_skills
+  - ledger
+  status: TESTED
+  acceptance_test: tests/test_web_skills.py::WebSkillTests::test_4b_layout_shift_without_fallbacks_proposes_repair
+  evidence: Recorded DOM demonstration compiled to a versioned skill; approval-gated replay on a fresh fixture verified from crm.sqlite3; repair proposal as new pending version.
+  source_license_if_reused: null
+- id: cu_ai_runbooks
+  source_hackathon: computer_use
+  name: ai runbooks
+  original_idea: Merge recordings into canonical runbooks and verify replay. (summary from the project brief)
+  resolve_capability: Runbooks as versioned skills whose replay prepares a plan and never dispatches without approval.
+  workspace: Skill Learning
+  adapter: web_skills
+  dependencies:
+  - web_skills
+  - ledger
+  status: TESTED
+  acceptance_test: tests/test_web_skills.py::WebSkillTests::test_2_approved_replay_on_fresh_fixture_with_new_params
+  evidence: Canonical skill replayed on a fresh fixture with new parameters; effect verified from the fixture DB.
+  source_license_if_reused: null
+- id: cu_a_test
+  source_hackathon: computer_use
+  name: A-Test
+  original_idea: Acceptance test generation/execution for browser/mobile/CLI. (summary from the project brief)
+  resolve_capability: Automated acceptance testing of web apps with fault injection and an independent oracle.
+  workspace: Development Operations
+  adapter: web_bench
+  dependencies:
+  - web_bench
+  - web_mission
+  status: BACKEND_IMPLEMENTED
+  acceptance_test: Write a test that runs web_bench fault cases and asserts judge labels against oracle ground truth.
+  evidence: benchmarks/web_bench.py exists; tests/test_web_bench.py only covers judge labels and Wilson bounds, not an A-Test workflow.
+  source_license_if_reused: null
+- id: cu_maison_h
+  source_hackathon: computer_use
+  name: Maison H
+  original_idea: Storefront data audit, approved fix proposal, independent page verification. (summary from the project brief)
+  resolve_capability: Home/real-estate commerce.
+  workspace: Commerce
+  adapter: none
+  dependencies: []
+  status: PROVIDER_REQUIRED
+  acceptance_test: Requires listing provider; no purchases allowed.
+  evidence: No provider integration in this repo; nothing implemented.
+  source_license_if_reused: null
+- id: cu_apartmentagent
+  source_hackathon: computer_use
+  name: ApartmentAgent
+  original_idea: Housing browser search plus authorized messaging coordination. (summary from the project brief)
+  resolve_capability: Desktop/web control for apartment search and applications.
+  workspace: Computer Control
+  adapter: windows_adapter
+  dependencies:
+  - windows_adapter
+  status: BLOCKED
+  acceptance_test: Fixture listing site + Windows desktop form fill verified via UIA.
+  evidence: 'WINDOWS_NATIVE_TESTS_NOT_RUN: needs native Windows UIA/Win32 input in an interactive session; Linux host cannot verify.'
+  source_license_if_reused: null
+- id: cu_ai_teaching_assistant
+  source_hackathon: computer_use
+  name: AI Teaching Assistant
+  original_idea: Citation/timestamp-grounded lecture retrieval, narrated demonstrations. (summary from the project brief)
+  resolve_capability: Tutoring content generation.
+  workspace: Creative and Educational
+  adapter: none
+  dependencies: []
+  status: PROVIDER_REQUIRED
+  acceptance_test: Requires an LLM provider; RESOLVE runs offline with no API keys.
+  evidence: No LLM provider by design (offline, no API keys).
+  source_license_if_reused: null
+- id: cu_enterpriseos
+  source_hackathon: computer_use
+  name: EnterpriseOS
+  original_idea: Cross-app CRM/engineering/calendar business operations. (summary from the project brief)
+  resolve_capability: Enterprise desktop workforce across native apps.
+  workspace: Multi-Agent Workforce
+  adapter: windows_adapter
+  dependencies:
+  - windows_adapter
+  - executor_lease
+  status: BLOCKED
+  acceptance_test: Multi-app Windows mission with lease and UIA verification.
+  evidence: 'WINDOWS_NATIVE_TESTS_NOT_RUN: needs native Windows UIA/Win32 input in an interactive session; Linux host cannot verify.'
+  source_license_if_reused: null
+- id: cu_grannysmith
+  source_hackathon: computer_use
+  name: GrannySmith
+  original_idea: Usability session recording, error/hesitation metrics, before/after comparisons. (summary from the project brief)
+  resolve_capability: Plain-language, high-confirmation operator for non-technical users.
+  workspace: Development Operations
+  adapter: web_mission
+  dependencies:
+  - web_mission
+  status: SPECIFIED
+  acceptance_test: Test that every consequential step requires explicit approval and ambiguous entities abstain.
+  evidence: Primitives exist (approval digest, abstention) but no simplified-UX workflow test.
+  source_license_if_reused: null
+- id: cu_meta_b
+  source_hackathon: computer_use
+  name: Meta.B
+  original_idea: Drag-and-drop agent invocation on an active permitted window. (summary from the project brief)
+  resolve_capability: Native computer control.
+  workspace: Computer Control
+  adapter: windows_adapter
+  dependencies:
+  - windows_adapter
+  status: BLOCKED
+  acceptance_test: Windows smoke suite in an interactive session.
+  evidence: 'WINDOWS_NATIVE_TESTS_NOT_RUN: needs native Windows UIA/Win32 input in an interactive session; Linux host cannot verify.'
+  source_license_if_reused: null
+- id: cu_houston
+  source_hackathon: computer_use
+  name: HOUSTON
+  original_idea: Action auditing, retry arbitration, recovery and hash-linked evidence receipts. (summary from the project brief)
+  resolve_capability: 'Mission control: durable action receipts, restart marks DISPATCHING as UNCERTAIN, read-only reconcile without retry.'
+  workspace: Trust and Safety
+  adapter: ledger
+  dependencies:
+  - ledger
+  status: TESTED
+  acceptance_test: tests/test_core.py::KernelTests::test_recovery_reconciles_known_local_effect_without_retry
+  evidence: Causal State Ledger persists receipts; recovery reconciles known effect without resending.
+  source_license_if_reused: null
+- id: cu_geowave
+  source_hackathon: computer_use
+  name: GeoWave
+  original_idea: Structured geospatial app use, verified route/scene state. (summary from the project brief)
+  resolve_capability: Geoscience / GIS software control.
+  workspace: Science and Engineering
+  adapter: windows_adapter
+  dependencies:
+  - windows_adapter
+  status: PROVIDER_REQUIRED
+  acceptance_test: Requires GIS application.
+  evidence: No scientific application available on this host.
+  source_license_if_reused: null
+- id: cu_space_control_delta
+  source_hackathon: computer_use
+  name: Space Control Delta
+  original_idea: Offline, restricted-network local vision/voice adapter. (summary from the project brief)
+  resolve_capability: Safety supervisor that halts/cancels actions on revocation (fencing).
+  workspace: Trust and Safety
+  adapter: executor_lease
+  dependencies:
+  - executor_lease
+  - ledger
+  status: SPECIFIED
+  acceptance_test: 'Test operator kill-switch: revoke lease mid-mission and assert no effect and CANCELLED state.'
+  evidence: Fencing primitive tested in tests/test_web_g3.py::ConcurrencyTests::test_G5_fenced_worker_cannot_dispatch; no operator kill-switch UI/workflow.
+  source_license_if_reused: null
+- id: cu_arcflash_copilot
+  source_hackathon: computer_use
+  name: ArcFlash Copilot
+  original_idea: Approved engineering evidence collection/report draft with expert review. (summary from the project brief)
+  resolve_capability: Electrical-engineering calculation tool control.
+  workspace: Science and Engineering
+  adapter: windows_adapter
+  dependencies:
+  - windows_adapter
+  status: PROVIDER_REQUIRED
+  acceptance_test: Requires engineering application.
+  evidence: No scientific/engineering application available on this host.
+  source_license_if_reused: null
+- id: cu_claw_dj
+  source_hackathon: computer_use
+  name: Claw-DJ
+  original_idea: Deterministic creative-app control, metadata-based workflow. (summary from the project brief)
+  resolve_capability: Audio/DJ app control.
+  workspace: Creative and Educational
+  adapter: windows_adapter
+  dependencies:
+  - windows_adapter
+  status: PROVIDER_REQUIRED
+  acceptance_test: Requires audio application and output device.
+  evidence: No audio application available on this host.
+  source_license_if_reused: null
+- id: cu_agent_kalshi
+  source_hackathon: computer_use
+  name: Agent kalshi
+  original_idea: Read-only/simulated market research; real-money actions disabled. (summary from the project brief)
+  resolve_capability: Prediction-market trading.
+  workspace: Commerce
+  adapter: none
+  dependencies: []
+  status: BLOCKED
+  acceptance_test: 'Not permitted: real-money trading.'
+  evidence: 'POLICY_BLOCKED: AGENTS.md forbids purchases / real-money transactions; no sandboxed payment rail exists in this repo.'
+  source_license_if_reused: null
+- id: cu_simulation_labs
+  source_hackathon: computer_use
+  name: simulation-labs
+  original_idea: Calibrated accessibility personas, task outcomes, friction heatmaps. (summary from the project brief)
+  resolve_capability: Deterministic fault-injection simulator comparing baselines vs the guarded system.
+  workspace: Development Operations
+  adapter: benchmark_lab
+  dependencies:
+  - ledger
+  status: TESTED
+  acceptance_test: tests/test_benchmark_lab.py::BenchmarkLabTests::test_runner_writes_raw_and_aggregate_records
+  evidence: Local simulator only; simulator evidence is kept separate from native evidence.
+  source_license_if_reused: null
+- id: gtm_gravity
+  source_hackathon: agentic_gtm
+  name: Gravity
+  original_idea: Intent signals, ethical relationship warm-up and content planning. (summary from the project brief)
+  resolve_capability: GTM account prioritisation.
+  workspace: Business and GTM
+  adapter: none
+  dependencies: []
+  status: IDEA
+  acceptance_test: Define scoring over CRM fixture and verify ranking deterministically.
+  evidence: None yet.
+  source_license_if_reused: null
+- id: gtm_zorro
+  source_hackathon: agentic_gtm
+  name: Zorro
+  original_idea: Unified sales/CRM decision and execution center. (summary from the project brief)
+  resolve_capability: Write CRM tasks for the correctly bound contact.
+  workspace: Business and GTM
+  adapter: web_mission
+  dependencies:
+  - web_mission
+  - ledger
+  status: BACKEND_IMPLEMENTED
+  acceptance_test: 'Write a Zorro-specific test: signal -> CRM task for bound contact ID, verified via CRM oracle.'
+  evidence: CRM task-write primitive is tested (test_W2_W10...) but the Zorro-specific trigger logic is not.
+  source_license_if_reused: null
+- id: gtm_net_work
+  source_hackathon: agentic_gtm
+  name: Net-Work
+  original_idea: Sourced meeting briefs, stakeholder and referral mapping. (summary from the project brief)
+  resolve_capability: Networking/introductions outreach.
+  workspace: Business and GTM
+  adapter: none
+  dependencies: []
+  status: PROVIDER_REQUIRED
+  acceptance_test: Requires external messaging; outbox is SIMULATED DELIVERY only.
+  evidence: No provider integration in this repo; nothing implemented.
+  source_license_if_reused: null
+- id: gtm_re_lay
+  source_hackathon: agentic_gtm
+  name: Re:lay
+  original_idea: Closed-lost opportunity signal-triggered re-engagement, approval before outreach. (summary from the project brief)
+  resolve_capability: Hand-off of mission state across restarts/agents without losing intent.
+  workspace: Business and GTM
+  adapter: web_mission
+  dependencies:
+  - ledger
+  - sse_stream
+  status: SPECIFIED
+  acceptance_test: Test that a mission handed to a new runner resumes from persisted state with no duplicate effect.
+  evidence: Restart persistence tested for the HTTP mission (tests/test_web_api_g1.py) but no relay/hand-off workflow.
+  source_license_if_reused: null
+- id: gtm_fomo_ai
+  source_hackathon: agentic_gtm
+  name: FOMO AI
+  original_idea: Choose correct internal subject matter expert, personalized drafts with approvals. (summary from the project brief)
+  resolve_capability: Market-signal alerting.
+  workspace: Business and GTM
+  adapter: none
+  dependencies: []
+  status: PROVIDER_REQUIRED
+  acceptance_test: Requires live market/news data provider.
+  evidence: No provider integration in this repo; nothing implemented.
+  source_license_if_reused: null
+- id: gtm_sentinel
+  source_hackathon: agentic_gtm
+  name: Sentinel
+  original_idea: Overdue CRM task cleanup, safe schedule revisions and context. (summary from the project brief)
+  resolve_capability: Watch CRM state and create guarded follow-up tasks.
+  workspace: Business and GTM
+  adapter: web_mission
+  dependencies:
+  - web_mission
+  - ledger
+  status: BACKEND_IMPLEMENTED
+  acceptance_test: 'Write a Sentinel test: CRM change -> guarded task write -> oracle check, plus lost-ack reconcile.'
+  evidence: CRM task write and lost-ack reconcile are tested in tests/test_web_g3.py; monitoring loop is not implemented.
+  source_license_if_reused: null
+- id: gtm_knock_knock
+  source_hackathon: agentic_gtm
+  name: Knock Knock
+  original_idea: Grounded off-platform outreach/gift proposals, cost and approval gates. (summary from the project brief)
+  resolve_capability: Outbound outreach.
+  workspace: Business and GTM
+  adapter: none
+  dependencies: []
+  status: PROVIDER_REQUIRED
+  acceptance_test: Requires external messaging (forbidden here); simulated outbox only.
+  evidence: No provider integration in this repo; nothing implemented.
+  source_license_if_reused: null
+- id: gtm_alphaluma
+  source_hackathon: agentic_gtm
+  name: AlphaLuma
+  original_idea: Nonprofit funding-fit search and justified outreach drafts. (summary from the project brief)
+  resolve_capability: GTM insight generation.
+  workspace: Business and GTM
+  adapter: none
+  dependencies: []
+  status: IDEA
+  acceptance_test: Define deterministic insight over fixture CRM.
+  evidence: None yet.
+  source_license_if_reused: null
+- id: gtm_telum
+  source_hackathon: agentic_gtm
+  name: Telum
+  original_idea: Provenance-based should-this-contact-be-made abstention engine. (summary from the project brief)
+  resolve_capability: Abstain when the contact is ambiguous; bind by stable ID only.
+  workspace: Business and GTM
+  adapter: web_mission
+  dependencies:
+  - web_mission
+  - ledger
+  status: TESTED
+  acceptance_test: tests/test_web_g3.py::WebMissionTests::test_W3_ambiguous_name_blocks_planning
+  evidence: Two "Jordan Lee" contacts -> NEEDS_CLARIFICATION, no CRM effect, non-candidate binding refused.
+  source_license_if_reused: null
+- id: gtm_hiresweet
+  source_hackathon: agentic_gtm
+  name: Hiresweet
+  original_idea: Relationship-graph warm-path prospect selection. (summary from the project brief)
+  resolve_capability: Recruiting/sourcing outreach.
+  workspace: Business and GTM
+  adapter: none
+  dependencies: []
+  status: PROVIDER_REQUIRED
+  acceptance_test: Requires sourcing data and messaging providers.
+  evidence: No provider integration in this repo; nothing implemented.
+  source_license_if_reused: null
+- id: gtm_sabrechord
+  source_hackathon: agentic_gtm
+  name: SabreChord
+  original_idea: Buyer-specific message-fit model and feedback-driven revisions. (summary from the project brief)
+  resolve_capability: GTM orchestration.
+  workspace: Business and GTM
+  adapter: none
+  dependencies: []
+  status: IDEA
+  acceptance_test: To be defined.
+  evidence: None yet.
+  source_license_if_reused: null
+- id: gtm_revibe
+  source_hackathon: agentic_gtm
+  name: Revibe
+  original_idea: Dormant pipeline triage, evidence/budget-based reactivation. (summary from the project brief)
+  resolve_capability: Re-engagement campaigns.
+  workspace: Business and GTM
+  adapter: none
+  dependencies: []
+  status: IDEA
+  acceptance_test: To be defined.
+  evidence: None yet.
+  source_license_if_reused: null
+- id: gtm_polar
+  source_hackathon: agentic_gtm
+  name: Polar
+  original_idea: Account-based marketing coordination. (summary from the project brief)
+  resolve_capability: Pipeline report generation from latest report version.
+  workspace: Business and GTM
+  adapter: web_mission
+  dependencies:
+  - web_mission
+  status: SPECIFIED
+  acceptance_test: Test that the latest report version (not an older one) is selected and hashed into the export.
+  evidence: Latest-version selection exercised inside test_W2_W10 (R-22 v4) but no Polar reporting workflow.
+  source_license_if_reused: null
+- id: gtm_ouija
+  source_hackathon: agentic_gtm
+  name: Ouija
+  original_idea: Conversational lost-deal reactivation and voice briefings. (summary from the project brief)
+  resolve_capability: Predictive GTM.
+  workspace: Business and GTM
+  adapter: none
+  dependencies: []
+  status: IDEA
+  acceptance_test: To be defined.
+  evidence: None yet.
+  source_license_if_reused: null
+- id: gtm_sonar
+  source_hackathon: agentic_gtm
+  name: Sonar
+  original_idea: Speech/audio analysis, summarized slide/document outputs. (summary from the project brief)
+  resolve_capability: Buying-signal detection from the web.
+  workspace: Business and GTM
+  adapter: none
+  dependencies: []
+  status: PROVIDER_REQUIRED
+  acceptance_test: Requires live web/data provider.
+  evidence: No provider integration in this repo; nothing implemented.
+  source_license_if_reused: null
+- id: gtm_modjo_bdr_prospector_3000
+  source_hackathon: agentic_gtm
+  name: Modjo BDR Prospector 3000
+  original_idea: Call qualification support; approved calls only. (summary from the project brief)
+  resolve_capability: BDR prospecting and outreach.
+  workspace: Business and GTM
+  adapter: none
+  dependencies: []
+  status: PROVIDER_REQUIRED
+  acceptance_test: Requires prospect data + messaging + LLM providers.
+  evidence: No provider integration in this repo; nothing implemented.
+  source_license_if_reused: null
+  registry_name: Modjo Team BDR Prospector 3000
+- id: gtm_ssa_platform
+  source_hackathon: agentic_gtm
+  name: SSA Platform
+  original_idea: Connected account activity and next-action dashboard. (summary from the project brief)
+  resolve_capability: Sales automation platform.
+  workspace: Business and GTM
+  adapter: none
+  dependencies: []
+  status: IDEA
+  acceptance_test: To be defined.
+  evidence: None yet.
+  source_license_if_reused: null
+- id: gtm_tourelle
+  source_hackathon: agentic_gtm
+  name: Tourelle
+  original_idea: Human swipe/approve workflow plus versioned learning feedback. (summary from the project brief)
+  resolve_capability: GTM monitoring.
+  workspace: Business and GTM
+  adapter: none
+  dependencies: []
+  status: IDEA
+  acceptance_test: To be defined.
+  evidence: None yet.
+  source_license_if_reused: null
+- id: gtm_tsc
+  source_hackathon: agentic_gtm
+  name: TSC
+  original_idea: Prospect technical-fit intelligence, evidence-based stack detection. (summary from the project brief)
+  resolve_capability: GTM concept.
+  workspace: Business and GTM
+  adapter: none
+  dependencies: []
+  status: IDEA
+  acceptance_test: To be defined.
+  evidence: None yet.
+  source_license_if_reused: null
+- id: gtm_before_you_quit
+  source_hackathon: agentic_gtm
+  name: Before You Quit
+  original_idea: Market validation before business launch using sourced signals. (summary from the project brief)
+  resolve_capability: 'Stop/cancel safely: pending actions are cancelled or reconciled, never left DISPATCHING.'
+  workspace: Business and GTM
+  adapter: ledger
+  dependencies:
+  - ledger
+  status: SPECIFIED
+  acceptance_test: Test that cancelling a mission revokes pending actions and leaves no unknown effects.
+  evidence: Restart->UNCERTAIN tested (tests/test_core.py) but no explicit quit workflow.
+  source_license_if_reused: null
+- id: gtm_eos
+  source_hackathon: agentic_gtm
+  name: Eos
+  original_idea: Task-specific multi-agent sales workspace and authorized connectors. (summary from the project brief)
+  resolve_capability: GTM concept.
+  workspace: Business and GTM
+  adapter: supervisor (13 tool-bounded roles)
+  dependencies: []
+  status: TESTED
+  acceptance_test: tests/test_supervisor_g5.py::SupervisorTests::test_full_pipeline_with_separate_verifier
+  evidence: Parallel read-only roles, entity-gated planner, separate verifier over CRM/report/outbox fixtures.
+  source_license_if_reused: null
+- id: gtm_locus
+  source_hackathon: agentic_gtm
+  name: LOCUS
+  original_idea: Identify absent decision-makers from meeting and org context. (summary from the project brief)
+  resolve_capability: Entity resolution of accounts/contacts by stable ID.
+  workspace: Business and GTM
+  adapter: web_mission
+  dependencies:
+  - ledger
+  - web_mission
+  status: SPECIFIED
+  acceptance_test: Test merge of duplicate-named accounts by stable ID with abstention.
+  evidence: Duplicate-name ambiguity tested in tests/test_core.py; no account-resolution workflow.
+  source_license_if_reused: null
+- id: gtm_pipework
+  source_hackathon: agentic_gtm
+  name: PipeWork
+  original_idea: Intent-ranked accounts, draft outreach, pipeline updates. (summary from the project brief)
+  resolve_capability: CRM pipeline updates via verified task writes.
+  workspace: Business and GTM
+  adapter: web_mission
+  dependencies:
+  - web_mission
+  - ledger
+  status: BACKEND_IMPLEMENTED
+  acceptance_test: Write a PipeWork test updating pipeline stage in the CRM fixture with oracle verification.
+  evidence: CRM task write primitive tested; stage updates not implemented in the fixture.
+  source_license_if_reused: null
+- id: gtm_growth_protocol
+  source_hackathon: agentic_gtm
+  name: Growth Protocol
+  original_idea: Marketing landing-page and workflow orchestration. (summary from the project brief)
+  resolve_capability: Growth experiments.
+  workspace: Business and GTM
+  adapter: none
+  dependencies: []
+  status: IDEA
+  acceptance_test: To be defined.
+  evidence: None yet.
+  source_license_if_reused: null
+- id: gtm_operator_less
+  source_hackathon: agentic_gtm
+  name: Operator-less
+  original_idea: Champion job-change signals plus risk-ranked action packets. (summary from the project brief)
+  resolve_capability: 'Autonomy bounded by approvals: only pre-approved digests run without an operator.'
+  workspace: Business and GTM
+  adapter: web_mission
+  dependencies:
+  - web_mission
+  - ledger
+  status: SPECIFIED
+  acceptance_test: Test that an operator-less run executes only actions with matching approval digests.
+  evidence: Digest binding tested (test_W2_W10, test_W4); no operator-less mode.
+  source_license_if_reused: null
+- id: gtm_madeleine
+  source_hackathon: agentic_gtm
+  name: Madeleine
+  original_idea: Evidence-based gifting/outreach with explicit cost/ethics checks. (summary from the project brief)
+  resolve_capability: Memory of customer context.
+  workspace: Business and GTM
+  adapter: none
+  dependencies: []
+  status: IDEA
+  acceptance_test: To be defined.
+  evidence: None yet.
+  source_license_if_reused: null
+- id: gtm_litmus
+  source_hackathon: agentic_gtm
+  name: Litmus
+  original_idea: Independent corroboration of prospect signals, budget-aware enrichment. (summary from the project brief)
+  resolve_capability: 'Pre-send checks: content/attachment edits after approval invalidate the send.'
+  workspace: Business and GTM
+  adapter: supervisor FileWorker/Researcher corroboration
+  dependencies:
+  - web_mission
+  status: TESTED
+  acceptance_test: tests/test_supervisor_g5.py::SupervisorTests::test_disk_and_app_disagree_blocks_plan
+  evidence: Two independent sources (app metadata vs disk bytes) must agree before planning.
+  source_license_if_reused: null
+- id: gtm_omo
+  source_hackathon: agentic_gtm
+  name: OMO
+  original_idea: Public-signal office supply/demand matching. (summary from the project brief)
+  resolve_capability: GTM concept.
+  workspace: Business and GTM
+  adapter: none
+  dependencies: []
+  status: IDEA
+  acceptance_test: To be defined.
+  evidence: None yet.
+  source_license_if_reused: null
+- id: gtm_1_1_marketing_at_scale
+  source_hackathon: agentic_gtm
+  name: 1:1 Marketing at Scale
+  original_idea: Sourced individualized landing page and outreach drafting. (summary from the project brief)
+  resolve_capability: Personalised outbound at scale.
+  workspace: Business and GTM
+  adapter: none
+  dependencies: []
+  status: PROVIDER_REQUIRED
+  acceptance_test: Requires LLM + messaging providers.
+  evidence: No provider integration in this repo; nothing implemented.
+  source_license_if_reused: null
+- id: gtm_closing_agent
+  source_hackathon: agentic_gtm
+  name: Closing AGENT
+  original_idea: Deal blocker identification and prioritized next actions. (summary from the project brief)
+  resolve_capability: Deal closing assistant.
+  workspace: Business and GTM
+  adapter: none
+  dependencies: []
+  status: PROVIDER_REQUIRED
+  acceptance_test: Requires messaging/e-sign providers.
+  evidence: No provider integration in this repo; nothing implemented.
+  source_license_if_reused: null
+- id: gtm_gtm_event
+  source_hackathon: agentic_gtm
+  name: GTM Event
+  original_idea: Event preparation, travel briefing, voice notes, follow-ups and ROI. (summary from the project brief)
+  resolve_capability: Event-driven GTM outreach.
+  workspace: Business and GTM
+  adapter: none
+  dependencies: []
+  status: PROVIDER_REQUIRED
+  acceptance_test: Requires event data and messaging providers.
+  evidence: No provider integration in this repo; nothing implemented.
+  source_license_if_reused: null
+- id: gtm_tindent
+  source_hackathon: agentic_gtm
+  name: Tindent
+  original_idea: Intent-based human triage with approvals. (summary from the project brief)
+  resolve_capability: Intent matching.
+  workspace: Business and GTM
+  adapter: none
+  dependencies: []
+  status: IDEA
+  acceptance_test: To be defined.
+  evidence: None yet.
+  source_license_if_reused: null
+- id: gtm_revive
+  source_hackathon: agentic_gtm
+  name: Revive
+  original_idea: Dormant contact re-engagement with CRM verification. (summary from the project brief)
+  resolve_capability: Revive stale deals via CRM follow-up tasks.
+  workspace: Business and GTM
+  adapter: web_mission
+  dependencies:
+  - web_mission
+  - ledger
+  status: SPECIFIED
+  acceptance_test: 'Test: stale-deal query on CRM fixture -> guarded follow-up task per bound contact, oracle verified.'
+  evidence: Follow-up task primitive tested (FollowThrough); stale-deal selection not implemented.
+  source_license_if_reused: null
+- id: gtm_cupidon
+  source_hackathon: agentic_gtm
+  name: Cupidon
+  original_idea: Research-driven call brief and credible opening line. (summary from the project brief)
+  resolve_capability: Matchmaking outreach.
+  workspace: Business and GTM
+  adapter: none
+  dependencies: []
+  status: PROVIDER_REQUIRED
+  acceptance_test: Requires messaging provider.
+  evidence: No provider integration in this repo; nothing implemented.
+  source_license_if_reused: null
+- id: gtm_velv
+  source_hackathon: agentic_gtm
+  name: VELV
+  original_idea: Acquisition-to-expansion account continuity. (summary from the project brief)
+  resolve_capability: GTM concept.
+  workspace: Business and GTM
+  adapter: none
+  dependencies: []
+  status: IDEA
+  acceptance_test: To be defined.
+  evidence: None yet.
+  source_license_if_reused: null
+- id: gtm_1er_signal
+  source_hackathon: agentic_gtm
+  name: 1er Signal
+  original_idea: Luxury resale market-context and prospect discovery. (summary from the project brief)
+  resolve_capability: First-party signal detection.
+  workspace: Business and GTM
+  adapter: none
+  dependencies: []
+  status: PROVIDER_REQUIRED
+  acceptance_test: Requires live signal data provider.
+  evidence: No provider integration in this repo; nothing implemented.
+  source_license_if_reused: null
