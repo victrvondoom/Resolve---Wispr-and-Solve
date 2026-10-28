@@ -1,4 +1,10 @@
 """Opt-in controlled GUI test of the full HTTP-to-Win32 input path."""
+try:
+    import tkinter  # noqa: F401
+except ImportError:
+    import unittest as _u
+    raise _u.SkipTest('tkinter unavailable on this host (headless Linux); Tk desktop fixture tests are NOT_RUN here')
+
 import ctypes
 from concurrent.futures import ThreadPoolExecutor
 import json

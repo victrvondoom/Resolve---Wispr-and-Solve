@@ -21,6 +21,7 @@ from capability_registry import WORKSPACES, concepts_for_workspace, load_registr
 from skill_runtime import AmbiguousEntity, SkillError, SkillStore, candidate_from_confirmed
 import windows_adapter
 import uia_adapter
+from web_api import WebApi
 
 DB = Path(os.environ.get('RESOLVE_DB', ROOT / 'data' / 'resolve.sqlite3'))
 ledger = Ledger(DB)
@@ -30,6 +31,7 @@ SESSION_TOKEN = secrets.token_urlsafe(32)
 scheduler = MissionScheduler(ledger.path, revision_check=lambda mid, revision: bool((mission := ledger.get_json('missions', mid)) and mission['status'] == 'ACTIVE' and mission['intent_revision'] == revision))
 register_demo_readers(scheduler, ledger)
 skill_store = SkillStore(ledger.path)
+web_api = WebApi(ledger)
 
 
 class ApiError(Exception):
@@ -89,6 +91,13 @@ class Handler(BaseHTTPRequestHandler):
             self.check_origin()
             parsed = urlparse(self.path)
             path = parsed.path
+            if path == '/api/stream':
+                q = parse_qs(parsed.query)
+                after = int(q.get('after', [self.headers.get('Last-Event-ID', '0')])[0] or 0)
+                return web_api.stream(self, after, min(float(q.get('max_s', ['300'])[0]), 3600))
+            if path.startswith('/api/web/'):
+                status, body = web_api.call('GET', path, {})
+                return self.send_json(status, body)
             if path == '/':
                 raw = (ROOT / 'web' / 'index.html').read_bytes()
                 self.send_response(200)
@@ -149,6 +158,9 @@ class Handler(BaseHTTPRequestHandler):
             self.check_origin(mutation=True)
             data = self.body()
             path = urlparse(self.path).path
+            routed = web_api.call('POST', path, data)
+            if routed:
+                return self.send_json(*routed)
             if path == '/api/resolve':
                 return self.send_json(200, {'contacts': resolve_candidates(ledger, 'contact', data.get('name'), data.get('context')), 'documents': resolve_candidates(ledger, 'document', data.get('name'), data.get('context'))})
             if path == '/api/mission/revise':

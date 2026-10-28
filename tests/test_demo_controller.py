@@ -1,4 +1,10 @@
 """Guard and optional real desktop end-to-end checks for DemoController."""
+try:
+    import tkinter  # noqa: F401
+except ImportError:
+    import unittest as _u
+    raise _u.SkipTest('tkinter unavailable on this host (headless Linux); Tk desktop fixture tests are NOT_RUN here')
+
 import json
 import os
 import subprocess

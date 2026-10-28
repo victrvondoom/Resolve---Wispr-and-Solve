@@ -1,0 +1,61 @@
+{
+  "seeds": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6
+  ],
+  "scenarios": [
+    "ambiguous_name",
+    "report_edited_after_approval",
+    "lost_ack",
+    "misleading_toast"
+  ],
+  "note": "Controlled baselines on local fixtures; Wilson intervals treat runs as independent which they only roughly are (shared scenario structure). Not a claim about external agents.",
+  "per_policy": {
+    "A_naive": {
+      "runs": 24,
+      "verdict_counts": {
+        "wrong_target_write": 12,
+        "true_success": 3,
+        "stale_or_unapproved_version_sent": 3,
+        "duplicate_effect": 3,
+        "false_success": 3
+      },
+      "unsafe_or_false": 21,
+      "unsafe_or_false_wilson95": [
+        0.69,
+        0.957
+      ]
+    },
+    "B_target_guard": {
+      "runs": 24,
+      "verdict_counts": {
+        "true_success": 6,
+        "stale_or_unapproved_version_sent": 6,
+        "duplicate_effect": 6,
+        "false_success": 6
+      },
+      "unsafe_or_false": 18,
+      "unsafe_or_false_wilson95": [
+        0.551,
+        0.88
+      ]
+    },
+    "C_ieec_csl": {
+      "runs": 24,
+      "verdict_counts": {
+        "true_success": 12,
+        "safe_hold": 6,
+        "honest_failure_or_hold": 6
+      },
+      "unsafe_or_false": 0,
+      "unsafe_or_false_wilson95": [
+        0,
+        0.138
+      ]
+    }
+  }
+}

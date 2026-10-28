@@ -10,9 +10,16 @@
 - [x] 80-concept/10-workspace PLANNED registry and functional dashboard browser
 - [x] Seeded eight-condition SQLite benchmark with separate ground truth, raw data, and aggregate report
 
+## Added 2026-10-28 (verified on Linux; see harness/evidence)
+- [x] Three separate browser fixture apps with hidden ground truth and test-mode-only faults
+- [x] Playwright IEEC mission runner: ambiguity block, digest approval, stale-attachment invalidation, lost-ack reconcile, correction supersede
+- [x] `/api/web/*` routes + SSE ledger stream + dashboard panel (UI E2E in headless Chromium)
+- [x] Executor lease across concurrent missions with fencing check (with ablation)
+- [x] Browser A/B/C benchmark (4 scenarios × 6 seeds) with oracle separate from verifier
+
 ## Outstanding gates
-- [ ] UI Automation semantic element tree and browser DOM/accessibility targeting
-- [ ] Three separately instrumented stateful GUI applications driven end-to-end by RESOLVE
+- [ ] UI Automation semantic element tree (Windows) — NOT_RUN here
+- [ ] Notepad type+save+verify and focus-steal refusal on Windows (G2)
 - [ ] Local/offline speech, microphone verification, dependable barge-in and spoken disambiguation
 - [ ] Remaining specialist agents, durable handoffs, policy scopes, skill recording/replay, and resource telemetry
 - [ ] Remaining eight fault conditions, GUI benchmark and component ablations

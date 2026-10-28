@@ -3,3 +3,5 @@ __pycache__/
 data/*.sqlite3*
 data/cursor.lock
 .venv/
+data/fixtures/
+data/resolve.sqlite3*
